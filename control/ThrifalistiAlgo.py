@@ -3,7 +3,7 @@ from math import ceil, floor
 from entity.Allocation import Allocation
 from entity.Foreldri import Foreldri
 from linked_list.LeveledLinkedLists import LeveledLinkedLists
-from entity.Thrifalisti import Thrifalisti
+from control.Thrifalisti import Thrifalisti
 
 
 class ThrifalistiAlgo:
@@ -31,9 +31,9 @@ class ThrifalistiAlgo:
             alloc = self.__find_avail_alloc(foreldri)
 
             if alloc is None:
-                self.__leveled_linked_lists.reset()
+                self.__leveled_linked_lists.retry()
                 continue
-            elif foreldri.has_extra_thrif():
+            elif foreldri.has_less_thrif():
                 self.__leveled_linked_lists.discard()
             else:
                 self.__leveled_linked_lists.commit()
@@ -51,7 +51,7 @@ class ThrifalistiAlgo:
         return list(filter(lambda h: not h.is_exclusift(), self.__get_all_available_hus(self.__huslisti)))
 
     def __get_all_available_hus(self, huslisti):
-        return list(filter(lambda h: h.is_available(), huslisti))
+        return list(filter(lambda h: not h.is_full(), huslisti))
 
     def __find_avail_hus_in_list(self, huslisti, foreldri: Foreldri):
         for hus in self.__get_all_available_hus(huslisti):
@@ -68,24 +68,26 @@ class ThrifalistiAlgo:
         return self.__leveled_linked_lists.is_deadlock()
 
     def __resolve_deadlock(self):
-        reset_pile = self.__get_reset_pile().copy()
+        retry_pile = self.__get_retry_pile().copy()
         for hus in self.__get_all_available_hus(self.__huslisti):
             for vika in hus.get_vikur().copy():
-                max_vikubil_foreldri = self.__get_foreldri_with_max_vikubil(reset_pile, vika, hus)
+                max_vikubil_foreldri = self.__get_foreldri_with_max_vikubil(retry_pile, vika, hus)
                 if not max_vikubil_foreldri:
                     continue
                 self.get_thrifalisti().set_foreldri(Allocation(vika, hus), max_vikubil_foreldri)
-                reset_pile.remove(max_vikubil_foreldri)
-                if len(reset_pile) == 0:
+                retry_pile.remove(max_vikubil_foreldri)
+                if len(retry_pile) == 0:
                     break
 
         self.__leveled_linked_lists.reset_deadlock()
 
-    def __get_reset_pile(self):
-        return self.__leveled_linked_lists.get_reset_pile()
+    def __get_retry_pile(self):
+        return self.__leveled_linked_lists.get_retry_pile()
 
-    def __get_foreldri_with_max_vikubil(self, reset_pile, vika, hus):
-        rp_list_filtered = list(filter(lambda f: hus in f.get_husalisti(), reset_pile))
+    def __get_foreldri_with_max_vikubil(self, retry_pile, vika, hus):
+        rp_list_filtered = list(filter(lambda f: hus in f.get_husalisti(), retry_pile))
+        if len(rp_list_filtered) == 0:
+            rp_list_filtered = list(filter(lambda f: hus in self.__get_all_available_non_exclusive_hus(), retry_pile))
         if len(rp_list_filtered) == 0:
             return None
         rp_list_filtered.sort(key=lambda f: self.__get_min_vikubil(vika, f.get_vikur()), reverse=True)

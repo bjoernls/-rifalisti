@@ -20,9 +20,6 @@ class Thrifalisti:
     def get_foreldri(self, vika, hus):
         return self.__thrifalisti[vika][hus]
 
-    def is_empty(self, vika, hus):
-        return self.get_foreldri(vika, hus) == self.__EMPTY_DATA
-
     def set_foreldri(self, allocation: Allocation, foreldri):
         vika = allocation.get_vika()
         hus = allocation.get_hus()
@@ -35,16 +32,10 @@ class Thrifalisti:
         hus.remove_vika(vika)
 
     def is_foreldri_i_viku(self, vika, foreldri):
-        for hus in self.__thrifalisti[vika]:
-            if foreldri == self.__thrifalisti[vika][hus]:
-                return True
-        return False
+        return foreldri in [self.__thrifalisti[vika][hus] for hus in self.__huslisti]
 
     def is_all_hus_full(self):
-        for hus in self.__huslisti:
-            if hus.is_available():
-                return False
-        return True
+        return all([hus.is_full() for hus in self.__huslisti])
 
     def __str__(self):
         result = "vika,"
@@ -58,6 +49,3 @@ class Thrifalisti:
                 result += str(self.__thrifalisti[v][hus].get_nafn()) + ","
             result = result[0: len(result) - 1]
         return result
-
-    def is_slot_available(self, vika, hus):
-        return self.get_foreldri(vika, hus) is self.__EMPTY_DATA

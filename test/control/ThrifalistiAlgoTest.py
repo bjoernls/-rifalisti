@@ -36,37 +36,12 @@ class MyTestCase(unittest.TestCase):
         for f in foreldralisti:
             print(f)
 
-    def test_run_until_min_vikubil(self):
-        min_vikubil = 0
-        i = 0
-        algo = None
-        foreldralisti = None
-        while min_vikubil < 10:
-            i += 1
-            viku_fjoldi = 20
-            husalisti = [Hus("a", viku_fjoldi, exklusift=True), Hus("b", viku_fjoldi, exklusift=True),
-                         Hus("c", viku_fjoldi), Hus("d", viku_fjoldi), Hus("e", viku_fjoldi), Hus("f", viku_fjoldi)]
-            foreldralisti = self.init_foreldralisti(husalisti)
-
-            algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
-
-            algo.compute()
-
-            min_vikubil = min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
-            print("min vikubil: " + str(min_vikubil))
-
-        print(str(i) + " runs")
-
-        thrifalisti = algo.get_thrifalisti()
-
-        print(thrifalisti)
-        self.print_sorted_foreldralisti(foreldralisti)
-
     def test_algo_compute_with_exclusive_hus(self):
         viku_fjoldi = 20
         husalisti = [Hus("a", viku_fjoldi, exklusift=True), Hus("b", viku_fjoldi, exklusift=True),
                      Hus("c", viku_fjoldi), Hus("d", viku_fjoldi), Hus("e", viku_fjoldi), Hus("f", viku_fjoldi)]
-        foreldralisti = self.init_foreldralisti(husalisti)
+        foreldrar_med_auka_thrif = ["c2", "c8", "a1"]
+        foreldralisti = self.init_foreldralisti(husalisti, foreldrar_med_auka_thrif)
 
         algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
 
@@ -77,18 +52,25 @@ class MyTestCase(unittest.TestCase):
         print(thrifalisti)
         self.print_sorted_foreldralisti(foreldralisti)
 
+        for f in list(filter(lambda f2: f2.get_nafn() in foreldrar_med_auka_thrif, foreldralisti)):
+            self.assertTrue(f.get_count(), 3)
+
         self.test_exclusivity(husalisti, thrifalisti, viku_fjoldi)
 
-    def init_foreldralisti(self, husalisti):
+    def init_foreldralisti(self, husalisti, foreldrar_med_auka_thrif=[]):
         foreldralisti = []
-        for i in range(10):
-            foreldralisti += [Foreldri("a" + str(i), [husalisti[0]])]
+        for i in range(9):
+            nafn = "a" + str(i)
+            foreldralisti += [Foreldri(nafn, [husalisti[0]], has_auka_thrif=nafn in foreldrar_med_auka_thrif)]
 
         for i in range(15):
-            foreldralisti += [Foreldri("b" + str(i), [husalisti[1]])]
+            nafn = "b" + str(i)
+            foreldralisti += [Foreldri(nafn, [husalisti[1]], has_auka_thrif=nafn in foreldrar_med_auka_thrif)]
 
-        for i in range(40):
-            foreldralisti += [Foreldri("c" + str(i), husalisti[2:])]
+        for i in range(30):
+            nafn = "c" + str(i)
+            foreldralisti += [Foreldri(nafn, husalisti[2:], has_auka_thrif=nafn in foreldrar_med_auka_thrif)]
+
         return foreldralisti
 
     def calculate_count_diff(self, foreldralisti):

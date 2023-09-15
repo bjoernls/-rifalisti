@@ -8,8 +8,8 @@ class Hus:
         self.__nafn = nafn
         self.__vikur = [v for v in range(vikufjoldi)]
 
-    def is_available(self):
-        return len(self.__vikur) > 0
+    def is_full(self):
+        return len(self.__vikur) == 0
 
     def get_nafn(self):
         return self.__nafn

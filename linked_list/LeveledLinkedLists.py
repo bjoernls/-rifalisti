@@ -1,4 +1,5 @@
 from entity.Foreldri import Foreldri
+from entity.PriorityList import PriorityListIterator
 from entity.Strategy import RandomStrategy
 from linked_list.LinkedList import LinkedList
 
@@ -10,22 +11,31 @@ class LeveledLinkedLists:
         self.level = 0
         self.curr_lllist: LinkedList = self.all_llls[self.level]
         self.tmp_foreldri = None
-        self.__reset_pile = []
+        self.__retry_pile = []
         self.__deadlock = False
 
     def __init_linked_lists(self, foreldralisti: [Foreldri], max_level):
         self.all_llls = []
-        for _ in range(0, max_level + 5):
+        for _ in range(0, max_level + 1):
             self.all_llls += [LinkedList([], RandomStrategy())]
 
+        priority_list = []
         for f in foreldralisti:
-            self.all_llls[f.get_count()].push(f)
+            if f.has_auka_thrif():
+                priority_list += [f]
+            else:
+                self.all_llls[f.get_count()].push(f)
+
+        self.priority_list_iterator = PriorityListIterator(priority_list)
 
     def pop(self):
-        self.tmp_foreldri = self.curr_lllist.pop_strategy()
+        self.tmp_foreldri = next(self.priority_list_iterator)
+
+        if not self.tmp_foreldri:
+            self.tmp_foreldri = self.curr_lllist.pop_strategy()
 
         if self.curr_lllist.is_empty():
-            if self.__reset_pile:
+            if self.__retry_pile:
                 self.__deadlock = True
             self.__increase_level()
 
@@ -42,8 +52,9 @@ class LeveledLinkedLists:
         self.all_llls[self.level + 1].push(self.tmp_foreldri)
         self.tmp_foreldri = None
 
-    def reset(self):
-        self.__reset_pile += [self.tmp_foreldri]
+    # þegar það er ekki nógu langt bil á milli þrifa
+    def retry(self):
+        self.__retry_pile += [self.tmp_foreldri]
         self.tmp_foreldri = None
 
     def is_deadlock(self):
@@ -51,8 +62,9 @@ class LeveledLinkedLists:
 
     def reset_deadlock(self):
         self.__deadlock = False
-        for f in self.__reset_pile:
+        for f in self.__retry_pile:
             self.curr_lllist.push(f)
+        self.priority_list_iterator.reset()
 
-    def get_reset_pile(self):
-        return self.__reset_pile
+    def get_retry_pile(self):
+        return self.__retry_pile

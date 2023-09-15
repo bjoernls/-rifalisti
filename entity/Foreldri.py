@@ -4,14 +4,19 @@ from entity.Allocation import Allocation
 
 
 class Foreldri:
-    def __init__(self, nafn, huslisti: [], has_extra_thrif=False, allocations=None):
+    def __init__(self, nafn, huslisti: [], has_less_thrif=False, allocations=None, has_auka_thrif=False):
         if allocations is None:
             allocations = []
+        if has_less_thrif and has_auka_thrif:
+            raise ValueError
         self.__allocations = allocations
         self.__nafn = nafn
         shuffle(huslisti)
         self.__huslisti = huslisti
-        self.__has_extra_thrif = has_extra_thrif
+        # þau sem eiga þrif inni því t.d. þrifu þrisvar síðast
+        self.__has_less_thrif = has_less_thrif
+        # þau sem fá auka þrif því þau þrifu einu sinni síðast
+        self.__has_auka_thrif = has_auka_thrif
 
     def get_count(self):
         return len(self.__allocations)
@@ -19,8 +24,11 @@ class Foreldri:
     def get_nafn(self):
         return self.__nafn
 
-    def has_extra_thrif(self):
-        return self.__has_extra_thrif
+    def has_less_thrif(self):
+        return self.__has_less_thrif
+
+    def has_auka_thrif(self):
+        return self.__has_auka_thrif
 
     def add_allocation(self, alloc: Allocation):
         self.__allocations += [alloc]
