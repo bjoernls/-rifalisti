@@ -4,7 +4,7 @@ from entity.Allocation import Allocation
 
 
 class Foreldri:
-    def __init__(self, nafn, huslisti: [], has_less_thrif=False, allocations=None, has_auka_thrif=False):
+    def __init__(self, nafn, huslisti: [], has_less_thrif=False, has_auka_thrif=False, allocations=None):
         if allocations is None:
             allocations = []
         if has_less_thrif and has_auka_thrif:

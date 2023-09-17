@@ -17,6 +17,9 @@ class Thrifalisti:
             for hus in self.__huslisti:
                 self.__thrifalisti[v][hus] = self.__EMPTY_DATA
 
+    def get_thrifalisti_i_viku(self, vika):
+        return self.__thrifalisti[vika]
+
     def get_foreldri(self, vika, hus):
         return self.__thrifalisti[vika][hus]
 

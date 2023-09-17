@@ -16,7 +16,7 @@ class LeveledLinkedLists:
 
     def __init_linked_lists(self, foreldralisti: [Foreldri], max_level):
         self.all_llls = []
-        for _ in range(0, max_level + 1):
+        for _ in range(0, max_level + 10):
             self.all_llls += [LinkedList([], RandomStrategy())]
 
         priority_list = []
@@ -44,6 +44,7 @@ class LeveledLinkedLists:
     def __increase_level(self):
         self.level += 1
         self.curr_lllist = self.all_llls[self.level]
+        self.priority_list_iterator.reset()
 
     def discard(self):
         self.tmp_foreldri = None
@@ -64,7 +65,6 @@ class LeveledLinkedLists:
         self.__deadlock = False
         for f in self.__retry_pile:
             self.curr_lllist.push(f)
-        self.priority_list_iterator.reset()
 
     def get_retry_pile(self):
         return self.__retry_pile

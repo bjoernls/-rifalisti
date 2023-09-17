@@ -1,19 +1,11 @@
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from entity.Foreldri import Foreldri
-from entity.Hus import Hus
-
-
-def init_foreldralisti(husalisti):
-    foreldralisti = []
-    for i in range(10):
-        foreldralisti += [Foreldri("a" + str(i), [husalisti[0]])]
-
-    for i in range(15):
-        foreldralisti += [Foreldri("b" + str(i), [husalisti[1]])]
-
-    for i in range(40):
-        foreldralisti += [Foreldri("c" + str(i), husalisti[2:])]
-    return foreldralisti
+from excel.SheetHandler import SheetHandler
+from excel.ThrifalistiExcelWriter import ThrifalistiWriter, ThrifalistiVikaDto
+from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
+from excel.sheet_infos.HusSheetInfo import HusSheetInfo
+from excel.WbManager import WbManager
+from mapper.Mapper import ForeldriMapper
+from mapper.Mapper import HusMapper
 
 
 def print_sorted_foreldralisti(foreldralisti):
@@ -22,17 +14,18 @@ def print_sorted_foreldralisti(foreldralisti):
         print(f)
 
 
-def run_until_min_vikubil_reached():
+def compute(wb):
     min_vikubil = 0
     i = 0
     algo = None
-    foreldralisti = None
-    while min_vikubil < 10:
+    viku_fjoldi = 20
+    hus_mapper = HusMapper(viku_fjoldi)
+
+    while min_vikubil < 5:
         i += 1
-        viku_fjoldi = 20
-        husalisti = [Hus("a", viku_fjoldi, exklusift=True), Hus("b", viku_fjoldi, exklusift=True),
-                     Hus("c", viku_fjoldi), Hus("d", viku_fjoldi), Hus("e", viku_fjoldi), Hus("f", viku_fjoldi)]
-        foreldralisti = init_foreldralisti(husalisti)
+
+        husalisti = SheetHandler().read(wb, HusSheetInfo(), hus_mapper)
+        foreldralisti = SheetHandler().read(wb, ForeldriSheetInfo(), ForeldriMapper(husalisti))
 
         algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
 
@@ -41,13 +34,17 @@ def run_until_min_vikubil_reached():
         min_vikubil = min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
         print("min vikubil: " + str(min_vikubil))
 
+    print(str(i) + " runs")
+
     thrifalisti = algo.get_thrifalisti()
 
-    print(thrifalisti)
-    print_sorted_foreldralisti(foreldralisti)
+    tw = ThrifalistiWriter(wb["Haust_2023"])
 
-    print(str(i) + " runs")
+    for v in range(viku_fjoldi):
+        tw.write_dto(ThrifalistiVikaDto(thrifalisti.get_thrifalisti_i_viku(v), husalisti))
+
+    wb.save("result2.xlsx")
 
 
 if __name__ == '__main__':
-    run_until_min_vikubil_reached()
+    compute(WbManager().open_wb("Þrifalisti 2023.xlsx"))

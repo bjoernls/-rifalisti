@@ -55,7 +55,7 @@ class ThrifalistiAlgo:
 
     def __find_avail_hus_in_list(self, huslisti, foreldri: Foreldri):
         for hus in self.__get_all_available_hus(huslisti):
-            for vika in hus.get_vikur():
+            for vika in list(filter(lambda v: v not in foreldri.get_vikur(), hus.get_vikur())):
                 if foreldri.get_count() > 0 and self.is_of_nalaegt(foreldri.get_vikur(), vika):
                     continue
                 return Allocation(vika, hus)
