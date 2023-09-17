@@ -1,5 +1,6 @@
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
+from entity.Vika import Vika
 from excel.dto.ForeldriDto import ForeldriDto
 from excel.dto.ThrifalistiDto import ThrifalistiDto
 
@@ -31,7 +32,6 @@ class ForeldriMapper(Mapper):
         pass
 
     def __init__(self, husalisti):
-
         self.husalisti = husalisti
 
     def __map_hus(self, hus_nafn, husalisti):
@@ -49,11 +49,19 @@ class ForeldriMapper(Mapper):
 
 
 class ThrifalistiMapper(Mapper):
-    husalisti_i_excel_rod = ["Rauða", "Ljósbláa", "Dökkbláa", "Græna", "Tóbíasar", "Skemman"]
+
+    def __init__(self):
+        self.vika_nr = 0
 
     def map_to_dto(self, thrifalisti_fyrir_viku):
-        # todo gera entity fyrir viku og nota i thrifalisti
-        ThrifalistiDto("")
+        dto = ThrifalistiDto()
+        cols = dto.get_columns()
+        for hus in thrifalisti_fyrir_viku:
+            col = next(filter(lambda c: hus.get_nafn() == c.get_id(), cols))
+            col.setter(thrifalisti_fyrir_viku[hus].get_nafn())
+        return dto
 
     def map_to_entity(self, dto):
-        pass
+        vika = Vika(self.vika_nr, dto.get_vika_texti(), {key: [] for key in self.husalisti_i_excel_rod})
+        self.vika_nr += 1
+        return vika

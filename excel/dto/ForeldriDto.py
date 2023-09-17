@@ -12,7 +12,7 @@ class ForeldriDto(Dto):
     def __init__(self, nafn, thrifastada, husalisti):
         self.__nafn = nafn
         self.__thrifastada = thrifastada
-        self.__husalisti = husalisti #list(filter(lambda v: v, [self.get_value(h) for h in self.__COL_HUS]))
+        self.__husalisti = husalisti
 
     def get_nafn(self):
         return self.__nafn

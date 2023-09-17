@@ -50,20 +50,20 @@ class ForeldriDtoFactory(DtoFactory):
         return self.get_value(row, self.__COL_NAFN)
 
     def __get_thrifastada(self, row):
-        return self.get_value(row, self.__COL_NAFN)
+        return self.get_value(row, self.__COL_THRIFASTADA)
 
     def __get_husalisti(self, row):
         return list(filter(lambda v: v, [self.get_value(row, col) for col in self.__COL_HUS]))
 
 
 class ThrifalistiDtoFactory(DtoFactory):
-    __COL_VIKA_TEXTI = "A"
 
     def __init__(self, sheet):
         super().__init__(sheet)
 
     def create_dto(self, row):
-        return ThrifalistiDto(self.__get_vika_texti(row))
+        dto = ThrifalistiDto()
+        for col in dto.get_columns():
+            col.setter(self.get_value(row, col.get_pos()))
+        return dto
 
-    def __get_vika_texti(self, row):
-        return self.get_value(row, self.__COL_VIKA_TEXTI)

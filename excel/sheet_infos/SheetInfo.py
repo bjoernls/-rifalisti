@@ -9,8 +9,9 @@ class SheetInfo:
     def create_dto(self, sheet):
         raise NotImplementedError()
 
-    def get_start_row_col(self):
+    def get_start_read_row_col(self):
         raise NotImplementedError()
 
-    def get_name(self):
+    def get_start_write_row_col(self):
         raise NotImplementedError()
+

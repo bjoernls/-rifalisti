@@ -1,6 +1,5 @@
 class ThrifalistiVikaDto:
     def __init__(self, thrifalisti_i_viku, husalisti):
-        # todo finna þetta programmatiskt ef þörf er
         husalisti_i_excel_rod = ["Rauða", "Ljósbláa", "Dökkbláa", "Græna", "Tóbíasar", "Skemman"]
         self.values = []
         for h in husalisti_i_excel_rod:

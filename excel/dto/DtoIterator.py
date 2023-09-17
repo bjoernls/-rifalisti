@@ -13,12 +13,31 @@ class Dto:
         return False
 
 
+class Column:
+    def __init__(self, pos, setter, getter):
+        self.__pos = pos
+        self.__setter = setter
+        self.__getter = getter
+
+    def getter(self):
+        return self.__getter()
+
+    def setter(self, val):
+        self.__setter(val)
+
+    def get_pos(self):
+        return self.__pos
+
+    def get_pos_num(self):
+        return convert_to_num(self.get_pos())
+
+
 class DtoIterator:
 
     def __init__(self, sheet, info: SheetInfo):
         self.sheet = sheet
-        self.row = info.get_start_row_col()[0] - 1
-        self.col = convert_to_num(info.get_start_row_col()[1])
+        self.row = info.get_start_read_row_col()[0] - 1
+        self.col = convert_to_num(info.get_start_read_row_col()[1])
         self.dto_factory = info.create_dto(sheet)
 
     def __iter__(self):

@@ -14,7 +14,7 @@ class ForeldriSheetInfo(SheetInfo):
         factory = ForeldriDtoFactory(sheet)
         return lambda row: factory.create_dto(row)
 
-    def get_start_row_col(self):
+    def get_start_read_row_col(self):
         return [2, "B"]
 
     def get_name(self):

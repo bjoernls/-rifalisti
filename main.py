@@ -1,10 +1,12 @@
+import openpyxl
+
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from excel.SheetHandler import SheetHandler
+from excel.SheetHandler import SheetHandler, ThrifalistiSheetHandler
 from excel.ThrifalistiExcelWriter import ThrifalistiWriter, ThrifalistiVikaDto
 from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
 from excel.sheet_infos.HusSheetInfo import HusSheetInfo
-from excel.WbManager import WbManager
-from mapper.Mapper import ForeldriMapper
+from excel.sheet_infos.ThrifalistiSheetInfo import ThrifalistiSheetInfo
+from mapper.Mapper import ForeldriMapper, ThrifalistiMapper
 from mapper.Mapper import HusMapper
 
 
@@ -24,8 +26,8 @@ def compute(wb):
     while min_vikubil < 5:
         i += 1
 
-        husalisti = SheetHandler().read(wb, HusSheetInfo(), hus_mapper)
-        foreldralisti = SheetHandler().read(wb, ForeldriSheetInfo(), ForeldriMapper(husalisti))
+        husalisti = SheetHandler(wb, HusSheetInfo()).read(hus_mapper)
+        foreldralisti = SheetHandler(wb, ForeldriSheetInfo()).read(ForeldriMapper(husalisti))
 
         algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
 
@@ -38,13 +40,17 @@ def compute(wb):
 
     thrifalisti = algo.get_thrifalisti()
 
-    tw = ThrifalistiWriter(wb["Haust_2023"])
+    t_mapper = ThrifalistiMapper()
+    dtos = []
 
     for v in range(viku_fjoldi):
-        tw.write_dto(ThrifalistiVikaDto(thrifalisti.get_thrifalisti_i_viku(v), husalisti))
+        dtos += [t_mapper.map_to_dto(thrifalisti.get_thrifalisti_i_viku(v))]
 
-    wb.save("result2.xlsx")
+    ThrifalistiSheetHandler(wb, ThrifalistiSheetInfo()).write(dtos)
+
+    print(thrifalisti)
+    wb.save("result3.xlsx")
 
 
 if __name__ == '__main__':
-    compute(WbManager().open_wb("Þrifalisti 2023.xlsx"))
+    compute(openpyxl.load_workbook("Þrifalisti 2023.xlsx"))
