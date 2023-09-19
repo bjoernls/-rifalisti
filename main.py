@@ -2,7 +2,7 @@ import openpyxl
 
 from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from excel.SheetHandler import SheetHandler, ThrifalistiSheetHandler
+from excel.SheetHandler import SheetHandler
 from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
 from excel.sheet_infos.HusSheetInfo import HusSheetInfo
 from excel.sheet_infos.ThrifalistiSheetInfo import ThrifalistiSheetInfo
@@ -22,19 +22,19 @@ def compute(wb):
 
     husalisti = SheetHandler(wb, HusSheetInfo()).read(HusMapper())
     tl_mapper = ThrifalistiMapper(husalisti)
-    vikulisti = []
+    vikuthrifalistar = []
     thrifalisti = None
+    tl_sheet_handler = SheetHandler(wb, ThrifalistiSheetInfo())
 
     while min_vikubil < 8:
         i += 1
-        vikulisti = SheetHandler(wb, ThrifalistiSheetInfo()).read(tl_mapper)
-        viku_fjoldi = len(list(filter(lambda v: not v.is_fri(), vikulisti)))
-
-        thrifalisti = Thrifalisti(vikulisti, husalisti)
-
         foreldralisti = SheetHandler(wb, ForeldriSheetInfo()).read(ForeldriMapper(husalisti))
 
-        algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
+        vikuthrifalistar = tl_sheet_handler.read(tl_mapper)
+        thrifalisti = Thrifalisti(vikuthrifalistar)
+        viku_fjoldi = calc_viku_fjoldi(vikuthrifalistar)
+
+        algo = ThrifalistiAlgo(viku_fjoldi, foreldralisti, husalisti)
 
         algo.compute(thrifalisti)
 
@@ -45,14 +45,18 @@ def compute(wb):
 
     print(str(i) + " runs")
 
-    dtos = []
+    tl_sheet_handler.write(__create_thrifalisti_dtos(thrifalisti, tl_mapper))
 
-    for v in vikulisti:
-        dtos += [tl_mapper.map_to_dto(thrifalisti.get_thrifalisti_i_viku(v.get_vika_nr()))]
+    wb.save("result2.xlsx")
 
-    ThrifalistiSheetHandler(wb, ThrifalistiSheetInfo()).write(dtos)
 
-    wb.save("result.xlsx")
+def calc_viku_fjoldi(vikuthrifalistar):
+    return len(list(filter(lambda v: not v.is_fri(), vikuthrifalistar)))
+
+
+def __create_thrifalisti_dtos(thrifalisti, tl_mapper):
+    dtos = [tl_mapper.map_to_dto(thrifalisti.get_vikuthrifalisti(v.get_vika_nr())) for v in thrifalisti.get_vikuthrifalistar()]
+    return dtos
 
 
 if __name__ == '__main__':

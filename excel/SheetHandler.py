@@ -26,11 +26,3 @@ class SheetHandler:
             for col in filtered_cols:
                 self.__sheet.cell(row_no, col.get_pos_num()).value = col.getter()
             row_no += 1
-
-    def skip_row(self, row_no):
-        return False
-
-
-class ThrifalistiSheetHandler(SheetHandler):
-    def skip_row(self, row_no):
-        return "Haustfrí" in self.get_sheet().cell(row_no, 1).value

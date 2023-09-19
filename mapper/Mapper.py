@@ -1,6 +1,6 @@
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
-from entity.Vika import Vika
+from entity.VikuThrifalisti import VikuThrifalisti
 from excel.dto.ForeldriDto import ForeldriDto
 from excel.dto.ThrifalistiDto import ThrifalistiDto
 
@@ -64,8 +64,8 @@ class ThrifalistiMapper(Mapper):
 
     def map_to_entity(self, dto):
         vika_texti = dto.get_vika_texti()
-        vika = Vika(self.vika_nr, vika_texti,
-                    self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(), self.__get_all_non_exclusive_hus())
+        vika = VikuThrifalisti(self.vika_nr, vika_texti,
+                               self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(), self.__get_all_non_exclusive_hus())
         self.vika_nr += 1
         return vika
 

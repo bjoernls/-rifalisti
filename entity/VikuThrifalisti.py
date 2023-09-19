@@ -1,7 +1,7 @@
 from entity.Allocation import Allocation
 
-#Todo rename í VikuThrifalisti
-class Vika:
+
+class VikuThrifalisti:
     def __init__(self, vika_nr, vika_texti, is_fri, thrifalisti_fyrir_viku, non_exclusive_husalisti):
         self.__thrifalisti_fyrir_viku = thrifalisti_fyrir_viku
         self.__vika_nr = vika_nr
