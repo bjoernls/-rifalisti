@@ -1,21 +1,39 @@
-from excel.dto.DtoIterator import Dto
+from excel.dto.DtoIterator import Dto, Column
 
 
 class ForeldriDto(Dto):
     def is_empty(self):
         return not self.__nafn
 
-    __COL_NAFN = "B"
-    __COL_THRIFASTADA = "C"
-    __COL_HUS = ["D", "E", "F"]
+    def __init__(self):
+        self.__nafn = None
+        self.__thrifastada = None
+        self.__husalisti = []
 
-    def __init__(self, nafn, thrifastada, husalisti):
+        self.columns = [Column("B", lambda nafn: self.set_nafn(nafn), lambda: self.get_nafn())]
+        self.columns += [Column("C", lambda ts: self.set_thrifastada(ts), lambda: self.get_thrifastada())]
+        self.columns += [Column("D", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
+        self.columns += [Column("E", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
+        self.columns += [Column("F", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
+
+    def get_columns(self):
+        return self.columns
+
+    def add_hus(self, hus):
+        if hus:
+            self.__husalisti += [hus]
+
+    def set_nafn(self, nafn):
         self.__nafn = nafn
-        self.__thrifastada = thrifastada
-        self.__husalisti = husalisti
 
     def get_nafn(self):
         return self.__nafn
+
+    def set_thrifastada(self, ts):
+        self.__thrifastada = ts
+
+    def get_thrifastada(self):
+        return self.__thrifastada
 
     def has_less_thrif(self):
         return self.__thrifastada == 1
@@ -37,5 +55,3 @@ class ForeldriDtoMapper:
 
     def map(self, dto: ForeldriDto):
         pass
-
-

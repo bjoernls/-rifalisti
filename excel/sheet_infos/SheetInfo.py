@@ -6,7 +6,7 @@ class SheetInfo:
     def get_workbook_name(self):
         raise NotImplementedError()
 
-    def create_dto(self, sheet):
+    def get_dto_factory(self, sheet):
         raise NotImplementedError()
 
     def get_start_read_row_col(self):

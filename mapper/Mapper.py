@@ -19,11 +19,8 @@ class HusMapper(Mapper):
     def map_to_dto(self, entity):
         pass
 
-    def __init__(self, vikufjoldi):
-        self.vikufjoldi = vikufjoldi
-
     def map_to_entity(self, hus_dto):
-        return Hus(hus_dto.get_nafn(), self.vikufjoldi, exklusift=hus_dto.is_exclusive())
+        return Hus(hus_dto.get_nafn(), exklusift=hus_dto.is_exclusive())
 
 
 class ForeldriMapper(Mapper):
@@ -49,19 +46,37 @@ class ForeldriMapper(Mapper):
 
 
 class ThrifalistiMapper(Mapper):
+    __FRI = ["Haustfrí", "Jólafrí"]
 
-    def __init__(self):
+    def __init__(self, husalisti):
         self.vika_nr = 0
+        self.__husalisti = husalisti
 
     def map_to_dto(self, thrifalisti_fyrir_viku):
         dto = ThrifalistiDto()
+        if thrifalisti_fyrir_viku.is_fri():
+            return dto
         cols = dto.get_columns()
-        for hus in thrifalisti_fyrir_viku:
+        for hus in self.__husalisti:
             col = next(filter(lambda c: hus.get_nafn() == c.get_id(), cols))
-            col.setter(thrifalisti_fyrir_viku[hus].get_nafn())
+            col.setter(thrifalisti_fyrir_viku.get_foreldri_i_husi(hus).get_nafn())
         return dto
 
     def map_to_entity(self, dto):
-        vika = Vika(self.vika_nr, dto.get_vika_texti(), {key: [] for key in self.husalisti_i_excel_rod})
+        vika_texti = dto.get_vika_texti()
+        vika = Vika(self.vika_nr, vika_texti,
+                    self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(), self.__get_all_non_exclusive_hus())
         self.vika_nr += 1
         return vika
+
+    def __get_all_non_exclusive_hus(self):
+        return list(filter(lambda h: not h.is_exclusift(), self.__husalisti))
+
+    def __is_fri(self, texti):
+        return any(fri in texti for fri in self.__FRI)
+
+    def __create_new_vikuthrifalisti(self):
+        return {key: None for key in self.__husalisti}
+
+    def reset(self):
+        self.vika_nr = 0

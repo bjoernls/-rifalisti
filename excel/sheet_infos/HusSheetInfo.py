@@ -10,9 +10,8 @@ class HusSheetInfo(SheetInfo):
     def get_workbook_name(self):
         return "Þrifalisti 2023.xlsx"
 
-    def create_dto(self, sheet):
-        factory = HusDtoFactory(sheet)
-        return lambda row: factory.create_dto(row)
+    def get_dto_factory(self, sheet):
+        return HusDtoFactory(sheet)
 
     def get_start_read_row_col(self):
         return [2, "A"]

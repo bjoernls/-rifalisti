@@ -37,7 +37,7 @@ class ThrifalistiDto(Dto):
         return not self.__vika_texti or self.__vika_texti == ""
 
     def skip(self):
-        return "haustfrí" in self.__vika_texti
+        return "haustfrí" in self.__vika_texti.lower()
 
     def set_vika_texti(self, vika_texti):
         self.__vika_texti = vika_texti

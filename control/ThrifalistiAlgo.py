@@ -6,92 +6,77 @@ from linked_list.LeveledLinkedLists import LeveledLinkedLists
 from control.Thrifalisti import Thrifalisti
 
 
+def get_min_vikubil(vika, vikur):
+    return min([abs(v - vika.get_vika_nr()) for v in vikur])
+
+
 class ThrifalistiAlgo:
 
     def __init__(self, huslisti, viku_fjoldi, foreldralisti: [Foreldri]):
         self.__min_vikubil = floor(viku_fjoldi / 2)
-        self.__foreldri_i_excl_husum = {}
         self.viku_fjoldi = viku_fjoldi
         self.__huslisti = huslisti
-        self.__thrifalisti = Thrifalisti(viku_fjoldi, huslisti)
         self.__leveled_linked_lists = LeveledLinkedLists(foreldralisti,
                                                          self.__calc_max_level(foreldralisti, huslisti, viku_fjoldi))
 
     def __calc_max_level(self, foreldralisti, huslisti, viku_fjoldi):
         return ceil(float(len(huslisti) * viku_fjoldi) / len(foreldralisti)) + 1
 
-    def get_thrifalisti(self):
-        return self.__thrifalisti
-
-    def compute(self):
-        while not self.__thrifalisti.is_all_hus_full():
+    def compute(self, thrifalisti: Thrifalisti):
+        while not thrifalisti.is_all_vika_full():
             if self.__is_deadlock():
-                self.__resolve_deadlock()
+                self.__resolve_deadlock(thrifalisti)
             foreldri = self.__leveled_linked_lists.pop()
-            alloc = self.__find_avail_alloc(foreldri)
 
-            if alloc is None:
+            alloc_found = self.__find_alloc(foreldri, thrifalisti)
+
+            if not alloc_found:
                 self.__leveled_linked_lists.retry()
                 continue
             elif foreldri.has_less_thrif():
                 self.__leveled_linked_lists.discard()
             else:
                 self.__leveled_linked_lists.commit()
-            self.__thrifalisti.set_foreldri(alloc, foreldri)
 
-    def __find_avail_alloc(self, foreldri):
-        alloc = self.__find_avail_hus_in_list(foreldri.get_husalisti(), foreldri)
+    def __find_alloc(self, foreldri, thrifalisti):
+        for vika in self.__get_vikur_ekki_of_nalaegt(thrifalisti, foreldri):
+            if vika.try_set_foreldri(foreldri):
+                return True
+        return False
 
-        if alloc is None:
-            return self.__find_avail_hus_in_list(self.__get_all_available_non_exclusive_hus(), foreldri)
+    def __get_vikur_ekki_of_nalaegt(self, thrifalisti, foreldri):
+        return list(filter(lambda vika: not self.is_of_nalaegt(foreldri.get_vikur(), vika),
+                           thrifalisti.get_vikulisti()))
 
-        return alloc
-
-    def __get_all_available_non_exclusive_hus(self):
-        return list(filter(lambda h: not h.is_exclusift(), self.__get_all_available_hus(self.__huslisti)))
-
-    def __get_all_available_hus(self, huslisti):
-        return list(filter(lambda h: not h.is_full(), huslisti))
-
-    def __find_avail_hus_in_list(self, huslisti, foreldri: Foreldri):
-        for hus in self.__get_all_available_hus(huslisti):
-            for vika in list(filter(lambda v: v not in foreldri.get_vikur(), hus.get_vikur())):
-                if foreldri.get_count() > 0 and self.is_of_nalaegt(foreldri.get_vikur(), vika):
-                    continue
-                return Allocation(vika, hus)
-        return None
-
-    def is_of_nalaegt(self, vikur, vika):
-        return any([abs(v - vika) < self.__min_vikubil for v in vikur])
+    def is_of_nalaegt(self, foreldri_vikur, vika):
+        if len(foreldri_vikur) == 0:
+            return False
+        return any([abs(v - vika.get_vika_nr()) < self.__min_vikubil for v in foreldri_vikur])
 
     def __is_deadlock(self):
         return self.__leveled_linked_lists.is_deadlock()
 
-    def __resolve_deadlock(self):
+    def __resolve_deadlock(self, thrifalisti):
         retry_pile = self.__get_retry_pile().copy()
-        for hus in self.__get_all_available_hus(self.__huslisti):
-            for vika in hus.get_vikur().copy():
-                max_vikubil_foreldri = self.__get_foreldri_with_max_vikubil(retry_pile, vika, hus)
-                if not max_vikubil_foreldri:
-                    continue
-                self.get_thrifalisti().set_foreldri(Allocation(vika, hus), max_vikubil_foreldri)
-                retry_pile.remove(max_vikubil_foreldri)
-                if len(retry_pile) == 0:
-                    break
+
+        avail_vikur = list(filter(lambda v: not v.is_full(), thrifalisti.get_vikulisti()))
+
+        for vika in avail_vikur:
+            f = self.__set_foreldri_with_max_vikubil(retry_pile, vika)
+            if not f:
+                continue
+            retry_pile.remove(f)
+            if len(retry_pile) == 0:
+                break
 
         self.__leveled_linked_lists.reset_deadlock()
 
     def __get_retry_pile(self):
         return self.__leveled_linked_lists.get_retry_pile()
 
-    def __get_foreldri_with_max_vikubil(self, retry_pile, vika, hus):
-        rp_list_filtered = list(filter(lambda f: hus in f.get_husalisti(), retry_pile))
-        if len(rp_list_filtered) == 0:
-            rp_list_filtered = list(filter(lambda f: hus in self.__get_all_available_non_exclusive_hus(), retry_pile))
-        if len(rp_list_filtered) == 0:
-            return None
-        rp_list_filtered.sort(key=lambda f: self.__get_min_vikubil(vika, f.get_vikur()), reverse=True)
-        return rp_list_filtered[0]
-
-    def __get_min_vikubil(self, vika, vikur):
-        return min([abs(v - vika) for v in vikur])
+    def __set_foreldri_with_max_vikubil(self, retry_pile, vika):
+        retry_pile.sort(key=lambda f: get_min_vikubil(vika, f.get_vikur()), reverse=True)
+        for f in retry_pile:
+            if vika.try_set_foreldri(f):
+                return f
+        return None

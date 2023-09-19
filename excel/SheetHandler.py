@@ -22,8 +22,6 @@ class SheetHandler:
     def write(self, dtos):
         row_no = self.__info.get_start_write_row_col()[0]
         for dto in dtos:
-            while self.skip_row(row_no):
-                row_no += 1
             filtered_cols = list(filter(lambda c: filter_cols_before_start(c, self.__info), dto.get_columns()))
             for col in filtered_cols:
                 self.__sheet.cell(row_no, col.get_pos_num()).value = col.getter()

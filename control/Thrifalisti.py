@@ -1,54 +1,37 @@
 from entity.Foreldri import Foreldri
 from entity.Allocation import Allocation
+from entity.Vika import Vika
 
 
 class Thrifalisti:
-    __EMPTY_DATA = Foreldri("", [])
 
-    def __init__(self, viku_fjoldi, huslisti):
+    def __init__(self, vikulisti, huslisti):
         self.__huslisti = huslisti
-        self.__viku_fjoldi = viku_fjoldi
-        self.__init_thrifalisti()
+        vikulisti.sort(key=lambda v: v.get_vika_nr())
+        self.__vikulisti: [Vika] = vikulisti
+        self.__vikulisti_no_fri = list(filter(lambda v: not v.is_fri(), vikulisti))
 
-    def __init_thrifalisti(self):
-        self.__thrifalisti = []
-        for v in range(self.__viku_fjoldi):
-            self.__thrifalisti += [{}]
-            for hus in self.__huslisti:
-                self.__thrifalisti[v][hus] = self.__EMPTY_DATA
+    def get_vikulisti(self):
+        return self.__vikulisti_no_fri
 
-    def get_thrifalisti_i_viku(self, vika):
-        return self.__thrifalisti[vika]
+    def get_thrifalisti_i_viku(self, vika) -> Vika:
+        return self.__vikulisti[vika]
 
     def get_foreldri(self, vika, hus):
-        return self.__thrifalisti[vika][hus]
+        return self.get_thrifalisti_i_viku(vika).get_foreldri_i_husi(hus)
 
-    def set_foreldri(self, allocation: Allocation, foreldri):
-        vika = allocation.get_vika()
-        hus = allocation.get_hus()
-
-        if self.__thrifalisti[vika][hus] is not self.__EMPTY_DATA:
-            raise RuntimeError("Villa")
-        self.__thrifalisti[vika][hus] = foreldri
-
-        foreldri.add_allocation(allocation)
-        hus.remove_vika(vika)
-
-    def is_foreldri_i_viku(self, vika, foreldri):
-        return foreldri in [self.__thrifalisti[vika][hus] for hus in self.__huslisti]
-
-    def is_all_hus_full(self):
-        return all([hus.is_full() for hus in self.__huslisti])
+    def is_all_vika_full(self):
+        return all([v.is_full() for v in self.__vikulisti])
 
     def __str__(self):
         result = "vika,"
         for hus in self.__huslisti:
             result += hus.get_nafn() + ","
         result = result[0: len(result) - 1]
-        for v in range(self.__viku_fjoldi):
+        for v in range(len(self.__vikulisti)):
             result += "\n"
             result += str(v + 1) + ","
             for hus in self.__huslisti:
-                result += str(self.__thrifalisti[v][hus].get_nafn()) + ","
+                result += str(self.get_foreldri(v, hus).get_nafn()) + ","
             result = result[0: len(result) - 1]
         return result

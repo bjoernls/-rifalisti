@@ -7,10 +7,13 @@ def convert_to_num(col):
 
 class Dto:
     def is_empty(self):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def skip(self):
         return False
+
+    def get_columns(self):
+        raise NotImplementedError
 
 
 class Column:
@@ -38,23 +41,24 @@ class DtoIterator:
         self.sheet = sheet
         self.row = info.get_start_read_row_col()[0] - 1
         self.col = convert_to_num(info.get_start_read_row_col()[1])
-        self.dto_factory = info.create_dto(sheet)
+        self.dto_factory = info.get_dto_factory(sheet)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        dto = self.__create_dto()
-        while dto.skip():
-            dto = self.__create_dto()
-
+        dto = self.__read_new_row()
         if dto.is_empty():
             raise StopIteration
+
+       # while dto.skip():
+        #    dto = self.__read_new_row()
+
         return dto
 
-    def __create_dto(self):
+    def __read_new_row(self):
         self.row += 1
-        return self.dto_factory(self.row)
+        return self.dto_factory.create_dto(self.row)
 
     def get_value(self, col):
         return self.sheet.cell(self.row, col).value
