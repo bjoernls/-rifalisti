@@ -1,3 +1,5 @@
+from zipfile import BadZipFile
+
 import openpyxl
 
 from control.Thrifalisti import Thrifalisti
@@ -59,4 +61,7 @@ def __create_thrifalisti_dtos(thrifalisti, tl_mapper):
 
 
 if __name__ == '__main__':
-    compute(openpyxl.load_workbook("Þrifalisti 2023.xlsx"))
+    try:
+        compute(openpyxl.load_workbook("Testgögn.xlsx"))
+    except BadZipFile:
+        print("Hafðu samband til að fá lykilorð að testgögnum")
