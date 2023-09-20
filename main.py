@@ -43,17 +43,12 @@ def compute(wb):
 
 
 def write_to_excel_and_save(thrifalisti, tl_sheet_handler, wb):
-    tl_sheet_handler.write(__create_thrifalisti_dtos(thrifalisti, tl_sheet_handler.get_mapper()))
-    wb.save("result2.xlsx")
+    tl_sheet_handler.write(thrifalisti)
+    wb.save("result.xlsx")
 
 
 def calc_viku_fjoldi(vikuthrifalistar):
     return len(list(filter(lambda v: not v.is_fri(), vikuthrifalistar)))
-
-
-def __create_thrifalisti_dtos(thrifalisti, tl_mapper):
-    dtos = [tl_mapper.map_to_dto(thrifalisti.get_vikuthrifalisti(v.get_vika_nr())) for v in thrifalisti.get_vikuthrifalistar()]
-    return dtos
 
 
 if __name__ == '__main__':

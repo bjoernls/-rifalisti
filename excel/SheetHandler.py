@@ -26,13 +26,16 @@ class SheetHandler:
         mapper = self.get_mapper()
         return [mapper.map_to_entity(dto) for dto in DtoIterator(self.__sheet, self.__info)]
 
-    def write(self, dtos):
+    def write(self, entities):
         row_no = self.__info.get_start_write_row_col()[0]
-        for dto in dtos:
+        for dto in self.create_dtos(entities):
             filtered_cols = list(filter(lambda c: filter_cols_before_start(c, self.__info), dto.get_columns()))
             for col in filtered_cols:
                 self.__sheet.cell(row_no, col.get_pos_num()).value = col.getter()
             row_no += 1
+
+    def create_dtos(self, entities):
+        raise NotImplementedError
 
 
 class HusSheetHandler(SheetHandler):
@@ -59,3 +62,8 @@ class ThrifalistiSheetHandler(SheetHandler):
 
     def get_mapper(self):
         return ThrifalistiMapper(self.__husalisti)
+
+    def create_dtos(self, thrifalisti):
+        dtos = [self.get_mapper().map_to_dto(thrifalisti.get_vikuthrifalisti(v.get_vika_nr())) for v in
+                thrifalisti.get_vikuthrifalistar()]
+        return dtos
