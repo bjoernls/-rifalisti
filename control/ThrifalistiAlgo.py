@@ -12,11 +12,8 @@ def get_min_vikubil(vika, vikur):
 
 class ThrifalistiAlgo:
 
-    def __init__(self, viku_fjoldi, foreldralisti: [Foreldri], huslisti):
-        self.__min_vikubil = floor(viku_fjoldi / 2)
-        self.viku_fjoldi = viku_fjoldi
-        self.__leveled_linked_lists = LeveledLinkedLists(foreldralisti,
-                                                         self.__calc_max_level(foreldralisti, huslisti, viku_fjoldi))
+    def __init__(self, foreldralisti: [Foreldri]):
+        self.__leveled_linked_lists = LeveledLinkedLists(foreldralisti)
 
     def __calc_max_level(self, foreldralisti, huslisti, viku_fjoldi):
         return ceil(float(len(huslisti) * viku_fjoldi) / len(foreldralisti)) + 1
@@ -44,13 +41,14 @@ class ThrifalistiAlgo:
         return False
 
     def __get_vikur_ekki_of_nalaegt(self, thrifalisti, foreldri):
-        return list(filter(lambda vika: not self.is_of_nalaegt(foreldri.get_vikur(), vika),
+        min_distance = self.__calc_min_vikubil(thrifalisti)
+        return list(filter(lambda vika: not self.is_of_nalaegt(foreldri.get_vikur(), vika, min_distance),
                            list(filter(lambda v: not v.is_fri(), thrifalisti.get_vikuthrifalistar()))))
 
-    def is_of_nalaegt(self, foreldri_vikur, vikuthrifalisti):
+    def is_of_nalaegt(self, foreldri_vikur, vikuthrifalisti, min_vikubil):
         if len(foreldri_vikur) == 0:
             return False
-        return any([abs(v - vikuthrifalisti.get_vika_nr()) < self.__min_vikubil for v in foreldri_vikur])
+        return any([abs(v - vikuthrifalisti.get_vika_nr()) < min_vikubil for v in foreldri_vikur])
 
     def __is_deadlock(self):
         return self.__leveled_linked_lists.is_deadlock()
@@ -80,3 +78,7 @@ class ThrifalistiAlgo:
             if vikuthrifalisti.try_set_foreldri(f):
                 return f
         return None
+
+    def __calc_min_vikubil(self, thrifalisti):
+        viku_fjoldi = len(list(filter(lambda v: not v.is_fri(), thrifalisti.get_vikuthrifalistar())))
+        return floor(viku_fjoldi / 2)

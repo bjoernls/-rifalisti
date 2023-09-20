@@ -22,7 +22,6 @@ def compute(wb):
 
     husalisti = SheetHandler(wb, HusSheetInfo()).read(HusMapper())
     tl_mapper = ThrifalistiMapper(husalisti)
-    vikuthrifalistar = []
     thrifalisti = None
     tl_sheet_handler = SheetHandler(wb, ThrifalistiSheetInfo())
 
@@ -32,11 +31,8 @@ def compute(wb):
 
         vikuthrifalistar = tl_sheet_handler.read(tl_mapper)
         thrifalisti = Thrifalisti(vikuthrifalistar)
-        viku_fjoldi = calc_viku_fjoldi(vikuthrifalistar)
 
-        algo = ThrifalistiAlgo(viku_fjoldi, foreldralisti, husalisti)
-
-        algo.compute(thrifalisti)
+        ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
         min_vikubil = min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
         print("min vikubil: " + str(min_vikubil))
@@ -45,8 +41,11 @@ def compute(wb):
 
     print(str(i) + " runs")
 
-    tl_sheet_handler.write(__create_thrifalisti_dtos(thrifalisti, tl_mapper))
+    write_to_excel_and_save(thrifalisti, tl_mapper, tl_sheet_handler, wb)
 
+
+def write_to_excel_and_save(thrifalisti, tl_mapper, tl_sheet_handler, wb):
+    tl_sheet_handler.write(__create_thrifalisti_dtos(thrifalisti, tl_mapper))
     wb.save("result2.xlsx")
 
 

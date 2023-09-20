@@ -15,7 +15,7 @@ class MyTestCase(unittest.TestCase):
         for i in range(60):
             foreldralisti += [Foreldri("f" + str(i), husalisti)]
 
-        algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
+        algo = ThrifalistiAlgo(viku_fjoldi)
 
         algo.compute()
 
@@ -43,7 +43,7 @@ class MyTestCase(unittest.TestCase):
         foreldrar_med_auka_thrif = ["c2", "c8", "a1"]
         foreldralisti = self.init_foreldralisti(husalisti, foreldrar_med_auka_thrif)
 
-        algo = ThrifalistiAlgo(husalisti, viku_fjoldi, foreldralisti)
+        algo = ThrifalistiAlgo(viku_fjoldi)
 
         algo.compute()
 

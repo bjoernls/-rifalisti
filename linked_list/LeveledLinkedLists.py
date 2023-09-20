@@ -6,24 +6,25 @@ from linked_list.LinkedList import LinkedList
 
 class LeveledLinkedLists:
 
-    def __init__(self, foreldralisti: [Foreldri], max_level):
-        self.__init_linked_lists(foreldralisti, max_level)
+    def __init__(self, foreldralisti: [Foreldri]):
+        self.__init_linked_lists(foreldralisti)
         self.level = 0
         self.curr_lllist: LinkedList = self.all_llls[self.level]
         self.tmp_foreldri = None
         self.__retry_pile = []
         self.__deadlock = False
 
-    def __init_linked_lists(self, foreldralisti: [Foreldri], max_level):
-        self.all_llls = []
-        for _ in range(0, max_level + 10):
-            self.all_llls += [LinkedList([], RandomStrategy())]
+    def __init_linked_lists(self, foreldralisti: [Foreldri]):
+        self.all_llls = [LinkedList([], RandomStrategy())]
+        self.all_llls += [LinkedList([], RandomStrategy())]
 
         priority_list = []
         for f in foreldralisti:
             if f.has_auka_thrif():
                 priority_list += [f]
             else:
+                while len(self.all_llls) < f.get_count():
+                    self.all_llls += [LinkedList([], RandomStrategy())]
                 self.all_llls[f.get_count()].push(f)
 
         self.priority_list_iterator = PriorityListIterator(priority_list)
@@ -45,6 +46,7 @@ class LeveledLinkedLists:
         self.level += 1
         self.curr_lllist = self.all_llls[self.level]
         self.priority_list_iterator.reset()
+        self.all_llls += [LinkedList([], RandomStrategy())]
 
     def discard(self):
         self.tmp_foreldri = None
