@@ -1,6 +1,3 @@
-from random import randint
-
-
 class Hus:
 
     def __init__(self, nafn, exklusift=False):

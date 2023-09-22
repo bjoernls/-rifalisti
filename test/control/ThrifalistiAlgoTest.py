@@ -1,8 +1,8 @@
 import unittest
 
+from control.ThrifalistiAlgo import ThrifalistiAlgo
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
-from control.ThrifalistiAlgo import ThrifalistiAlgo
 
 
 class MyTestCase(unittest.TestCase):

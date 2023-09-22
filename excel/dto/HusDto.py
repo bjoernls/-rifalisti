@@ -1,25 +1,14 @@
-from excel.dto.DtoIterator import Dto, Column
-
-
-class HusDto(Dto):
-    def is_empty(self):
-        return self.__nafn is None
+class HusDto:
 
     def __init__(self):
         self.__nafn = None
         self.__is_exclusive = False
-
-        self.__columns = [Column("A", lambda nafn: self.set_nafn(nafn), lambda: self.get_nafn())]
-        self.__columns += [Column("B", lambda e: self.set_exclusive(e), lambda: self.is_exclusive())]
 
     def set_nafn(self, nafn):
         self.__nafn = nafn
 
     def get_nafn(self):
         return self.__nafn
-
-    def get_columns(self):
-        return self.__columns
 
     def is_exclusive(self):
         return self.__is_exclusive

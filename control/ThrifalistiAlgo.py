@@ -1,9 +1,8 @@
 from math import ceil, floor
 
-from entity.Allocation import Allocation
+from control.Thrifalisti import Thrifalisti
 from entity.Foreldri import Foreldri
 from linked_list.LeveledLinkedLists import LeveledLinkedLists
-from control.Thrifalisti import Thrifalisti
 
 
 def get_min_vikubil(vika, vikur):

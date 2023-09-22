@@ -1,23 +1,10 @@
-from excel.dto.DtoIterator import Dto, Column
 
 
-class ForeldriDto(Dto):
-    def is_empty(self):
-        return not self.__nafn
-
+class ForeldriDto:
     def __init__(self):
         self.__nafn = None
         self.__thrifastada = None
         self.__husalisti = []
-
-        self.columns = [Column("B", lambda nafn: self.set_nafn(nafn), lambda: self.get_nafn())]
-        self.columns += [Column("C", lambda ts: self.set_thrifastada(ts), lambda: self.get_thrifastada())]
-        self.columns += [Column("D", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
-        self.columns += [Column("E", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
-        self.columns += [Column("F", lambda hus: self.add_hus(hus), lambda: self.get_husalisti())]
-
-    def get_columns(self):
-        return self.columns
 
     def add_hus(self, hus):
         if hus:

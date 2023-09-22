@@ -1,5 +1,3 @@
-from entity.Foreldri import Foreldri
-from entity.Allocation import Allocation
 from entity.VikuThrifalisti import VikuThrifalisti
 
 

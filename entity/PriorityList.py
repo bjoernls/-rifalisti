@@ -2,6 +2,7 @@ from collections import Iterator
 
 from entity.Foreldri import Foreldri
 
+
 # foreldrar sem fá auka þrif
 class PriorityListIterator(Iterator):
 

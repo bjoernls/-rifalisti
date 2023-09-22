@@ -1,8 +1,9 @@
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
 from entity.VikuThrifalisti import VikuThrifalisti
+from excel.dto.Column import Column
 from excel.dto.ForeldriDto import ForeldriDto
-from excel.dto.ThrifalistiDto import ThrifalistiDto
+from excel.dto.ThrifalistiDto import ThrifalistiDto, ThrifalistiColumn
 
 
 class Mapper:
@@ -10,13 +11,27 @@ class Mapper:
     def map_to_entity(self, dto):
         raise NotImplementedError
 
-    def map_to_dto(self, entity):
+    def map_to_dto(self, entity, col_map=None):
         raise NotImplementedError
+
+    def get_columns(self):
+        raise NotImplementedError
+
+    def reset(self):
+        pass
 
 
 class HusMapper(Mapper):
 
-    def map_to_dto(self, entity):
+    def __init__(self):
+        self.__columns = [Column("A", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
+        self.__columns += [
+            Column("B", lambda args: args[0].set_exclusive(args[1]), lambda args: args[0].is_exclusive())]
+
+    def get_columns(self):
+        return self.__columns
+
+    def map_to_dto(self, entity, col_map=None):
         pass
 
     def map_to_entity(self, hus_dto):
@@ -25,11 +40,20 @@ class HusMapper(Mapper):
 
 class ForeldriMapper(Mapper):
 
-    def map_to_dto(self, entity):
+    def get_columns(self):
+        return self.columns
+
+    def map_to_dto(self, entity, col_map=None):
         pass
 
     def __init__(self, husalisti):
         self.husalisti = husalisti
+        self.columns = [Column("B", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
+        self.columns += [
+            Column("C", lambda args: args[0].set_thrifastada(args[1]), lambda args: args[0].get_thrifastada())]
+        self.columns += [Column("D", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
+        self.columns += [Column("E", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
+        self.columns += [Column("F", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
 
     def __map_hus(self, hus_nafn, husalisti):
         for h in husalisti:
@@ -52,20 +76,34 @@ class ThrifalistiMapper(Mapper):
         self.vika_nr = 0
         self.__husalisti = husalisti
 
-    def map_to_dto(self, thrifalisti_fyrir_viku):
+        self.columns = [
+            ThrifalistiColumn("A", lambda args: args[0].set_vika_texti(args[1]), lambda dto: dto.get_vika_texti())]
+
+        for s in range(ord("B"), ord("G") + 1):
+            col_stafur = chr(s)
+            self.columns += [ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
+                                               lambda args: args[0].get_thrif(args[1]), is_thrif=True)]
+
+    def get_columns(self):
+        return self.columns
+
+    def map_to_dto(self, thrifalisti_fyrir_viku, col_to_hus_map=None):
         dto = ThrifalistiDto()
-        if thrifalisti_fyrir_viku.is_fri():
-            return dto
-        cols = dto.get_columns()
+        cols = self.get_columns()
         for hus in self.__husalisti:
-            col = next(filter(lambda c: hus.get_nafn() == c.get_id(), cols))
-            col.setter(thrifalisti_fyrir_viku.get_foreldri_i_husi(hus).get_nafn())
+            col = next(filter(lambda c: hus.get_nafn() == col_to_hus_map[c.get_pos()], cols))
+            foreldri_i_husi = thrifalisti_fyrir_viku.get_foreldri_i_husi(hus)
+            if foreldri_i_husi:
+                col.setter(dto, hus.get_nafn(), foreldri_i_husi.get_nafn())
+            else:
+                col.setter(dto, hus.get_nafn(), None)
         return dto
 
     def map_to_entity(self, dto):
         vika_texti = dto.get_vika_texti()
         vika = VikuThrifalisti(self.vika_nr, vika_texti,
-                               self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(), self.__get_all_non_exclusive_hus())
+                               self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(),
+                               self.__get_all_non_exclusive_hus())
         self.vika_nr += 1
         return vika
 

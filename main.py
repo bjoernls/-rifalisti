@@ -1,15 +1,8 @@
-from zipfile import BadZipFile
-
 import openpyxl
 
 from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from excel.SheetHandler import SheetHandler, HusSheetHandler, ForeldriSheetHandler, ThrifalistiSheetHandler
-from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
-from excel.sheet_infos.HusSheetInfo import HusSheetInfo
-from excel.sheet_infos.ThrifalistiSheetInfo import ThrifalistiSheetInfo
-from mapper.Mapper import ThrifalistiMapper, ForeldriMapper
-from mapper.Mapper import HusMapper
+from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler
 
 
 def print_sorted_foreldralisti(foreldralisti):
@@ -23,27 +16,31 @@ def compute(wb):
     i = 0
 
     husalisti = HusSheetHandler(wb).read()
-    tl_sheet_handler = ThrifalistiSheetHandler(wb, husalisti)
+    thrifalisti_sheet_handler = ThrifalistiSheetHandler(wb, husalisti)
     thrifalisti = None
 
     while min_vikubil < 8:
         i += 1
-        foreldralisti = ForeldriSheetHandler(wb, husalisti).read()
+        thrifalisti = Thrifalisti(thrifalisti_sheet_handler.read())
 
-        thrifalisti = Thrifalisti(tl_sheet_handler.read())
+        foreldralisti = ForeldriSheetHandler(wb, husalisti).read()
 
         ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
-        min_vikubil = min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
+        min_vikubil = __calc_min_vikubil(foreldralisti)
         print("min vikubil: " + str(min_vikubil))
 
     print(str(i) + " runs")
 
-    write_to_excel_and_save(thrifalisti, tl_sheet_handler, wb)
+    write_to_excel_and_save(thrifalisti, thrifalisti_sheet_handler, wb)
 
 
-def write_to_excel_and_save(thrifalisti, tl_sheet_handler, wb):
-    tl_sheet_handler.write(thrifalisti)
+def __calc_min_vikubil(foreldralisti):
+    return min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
+
+
+def write_to_excel_and_save(thrifalisti, thrifalisti_sheet_handler, wb):
+    thrifalisti_sheet_handler.write(thrifalisti)
     wb.save("result.xlsx")
 
 
