@@ -1,9 +1,8 @@
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
 from entity.VikuThrifalisti import VikuThrifalisti
-from excel.dto.Column import Column
 from excel.dto.ForeldriDto import ForeldriDto
-from excel.dto.ThrifalistiDto import ThrifalistiDto, ThrifalistiColumn
+from excel.dto.ThrifalistiDto import ThrifalistiDto
 
 
 class Mapper:
@@ -34,10 +33,7 @@ class ForeldriMapper(Mapper):
 
     @staticmethod
     def __map_hus(hus_nafn, husalisti):
-        for h in husalisti:
-            if h.get_nafn() == hus_nafn:
-                return h
-        raise ValueError
+        return next((h for h in husalisti if h.get_nafn() == hus_nafn))
 
     def map_to_dto(self, entity):
         pass
@@ -53,9 +49,10 @@ class ForeldriMapper(Mapper):
 class ThrifalistiMapper(Mapper):
     __FRI = ["Haustfrí", "Jólafrí"]
 
-    def __init__(self, husalisti, columns, col_to_hus_map):
+    def __init__(self, husalisti, foreldralisti, columns, col_to_hus_map):
         self.vika_nr = 0
         self.__husalisti = husalisti
+        self.__foreldralisti = foreldralisti
         self.__columns = columns
         self.col_to_hus_map = col_to_hus_map
 
@@ -76,8 +73,15 @@ class ThrifalistiMapper(Mapper):
         vika = VikuThrifalisti(self.vika_nr, vika_texti,
                                self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(),
                                self.__get_all_non_exclusive_hus())
+        self.__map_foreldri_i_thrifalisti(dto, vika)
         self.vika_nr += 1
         return vika
+
+    def __map_foreldri_i_thrifalisti(self, dto, vika):
+        for h in self.__husalisti:
+            nafn_i_toflu = dto.get_thrif(h.get_nafn())
+            if nafn_i_toflu is not None:
+                vika.set_foreldri_i_husi(h, next((f for f in self.__foreldralisti if f.get_nafn() == nafn_i_toflu)))
 
     def __get_all_non_exclusive_hus(self):
         return list(filter(lambda h: not h.is_exclusift(), self.__husalisti))

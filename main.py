@@ -16,14 +16,13 @@ def compute(wb):
     i = 0
 
     husalisti = HusSheetHandler(wb).read()
-    thrifalisti_sheet_handler = ThrifalistiSheetHandler(wb, husalisti)
     thrifalisti = None
 
     while min_vikubil < 8:
         i += 1
-        thrifalisti = Thrifalisti(thrifalisti_sheet_handler.read())
-
         foreldralisti = ForeldriSheetHandler(wb, husalisti).read()
+
+        thrifalisti = Thrifalisti(ThrifalistiSheetHandler(wb, husalisti, foreldralisti).read())
 
         ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
@@ -33,7 +32,7 @@ def compute(wb):
 
     print(str(i) + " runs")
 
-    write_to_excel_and_save(thrifalisti, thrifalisti_sheet_handler, wb)
+    write_to_excel_and_save(thrifalisti, ThrifalistiSheetHandler(wb, husalisti, foreldralisti), wb)
 
 
 def __calc_min_vikubil(foreldralisti):

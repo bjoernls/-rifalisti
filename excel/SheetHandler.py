@@ -120,14 +120,14 @@ class ForeldriSheetHandler(SheetHandler):
 
 
 class ThrifalistiSheetHandler(SheetHandler):
-    def __init__(self, wb, husalisti):
+    def __init__(self, wb, husalisti, foreldralisti):
         super().__init__(wb, None, ThrifalistiSheetInfo())
         self.__columns = []
         self.__col_to_hus_map = {}
-        self._mapper = self.__get_mapper(husalisti)
+        self._mapper = self.__get_mapper(husalisti, foreldralisti)
 
-    def __get_mapper(self, husalisti):
-        return ThrifalistiMapper(husalisti, self._get_columns(), self.__get_col_to_hus_map())
+    def __get_mapper(self, husalisti, foreldralisti):
+        return ThrifalistiMapper(husalisti, foreldralisti, self._get_columns(), self.__get_col_to_hus_map())
 
     def __get_col_to_hus_map(self):
         if not self.__col_to_hus_map:
@@ -143,8 +143,7 @@ class ThrifalistiSheetHandler(SheetHandler):
 
             for s in range(ord("B"), ord("G") + 1):
                 col_stafur = chr(s)
-                self.__columns += [
-                    ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
+                self.__columns += [ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
                                       lambda args: args[0].get_thrif(args[1]), is_thrif=True)]
         return self.__columns
 
