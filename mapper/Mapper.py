@@ -11,10 +11,7 @@ class Mapper:
     def map_to_entity(self, dto):
         raise NotImplementedError
 
-    def map_to_dto(self, entity, col_map=None):
-        raise NotImplementedError
-
-    def get_columns(self):
+    def map_to_dto(self, entity):
         raise NotImplementedError
 
     def reset(self):
@@ -23,15 +20,7 @@ class Mapper:
 
 class HusMapper(Mapper):
 
-    def __init__(self):
-        self.__columns = [Column("A", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
-        self.__columns += [
-            Column("B", lambda args: args[0].set_exclusive(args[1]), lambda args: args[0].is_exclusive())]
-
-    def get_columns(self):
-        return self.__columns
-
-    def map_to_dto(self, entity, col_map=None):
+    def map_to_dto(self, entity):
         pass
 
     def map_to_entity(self, hus_dto):
@@ -40,26 +29,18 @@ class HusMapper(Mapper):
 
 class ForeldriMapper(Mapper):
 
-    def get_columns(self):
-        return self.columns
-
-    def map_to_dto(self, entity, col_map=None):
-        pass
-
     def __init__(self, husalisti):
         self.husalisti = husalisti
-        self.columns = [Column("B", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
-        self.columns += [
-            Column("C", lambda args: args[0].set_thrifastada(args[1]), lambda args: args[0].get_thrifastada())]
-        self.columns += [Column("D", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
-        self.columns += [Column("E", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
-        self.columns += [Column("F", lambda args: args[0].add_hus(args[1]), lambda args: args[0].get_husalisti())]
 
-    def __map_hus(self, hus_nafn, husalisti):
+    @staticmethod
+    def __map_hus(hus_nafn, husalisti):
         for h in husalisti:
             if h.get_nafn() == hus_nafn:
                 return h
         raise ValueError
+
+    def map_to_dto(self, entity):
+        pass
 
     def map_to_entity(self, foreldri_dto: ForeldriDto) -> Foreldri:
         husalisti_mapped = list(map(lambda h: self.__map_hus(h, self.husalisti), foreldri_dto.get_husalisti()))
@@ -72,26 +53,17 @@ class ForeldriMapper(Mapper):
 class ThrifalistiMapper(Mapper):
     __FRI = ["Haustfrí", "Jólafrí"]
 
-    def __init__(self, husalisti):
+    def __init__(self, husalisti, columns, col_to_hus_map):
         self.vika_nr = 0
         self.__husalisti = husalisti
+        self.__columns = columns
+        self.col_to_hus_map = col_to_hus_map
 
-        self.columns = [
-            ThrifalistiColumn("A", lambda args: args[0].set_vika_texti(args[1]), lambda dto: dto.get_vika_texti())]
-
-        for s in range(ord("B"), ord("G") + 1):
-            col_stafur = chr(s)
-            self.columns += [ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
-                                               lambda args: args[0].get_thrif(args[1]), is_thrif=True)]
-
-    def get_columns(self):
-        return self.columns
-
-    def map_to_dto(self, thrifalisti_fyrir_viku, col_to_hus_map=None):
+    def map_to_dto(self, thrifalisti_fyrir_viku):
         dto = ThrifalistiDto()
-        cols = self.get_columns()
+        cols = self.__columns
         for hus in self.__husalisti:
-            col = next(filter(lambda c: hus.get_nafn() == col_to_hus_map[c.get_pos()], cols))
+            col = next(filter(lambda c: hus.get_nafn() == self.col_to_hus_map[c.get_pos()], cols))
             foreldri_i_husi = thrifalisti_fyrir_viku.get_foreldri_i_husi(hus)
             if foreldri_i_husi:
                 col.setter(dto, hus.get_nafn(), foreldri_i_husi.get_nafn())

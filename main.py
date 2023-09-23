@@ -28,6 +28,7 @@ def compute(wb):
         ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
         min_vikubil = __calc_min_vikubil(foreldralisti)
+
         print("min vikubil: " + str(min_vikubil))
 
     print(str(i) + " runs")
