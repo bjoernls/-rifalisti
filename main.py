@@ -12,27 +12,49 @@ def print_sorted_foreldralisti(foreldralisti):
 
 
 def compute(wb):
-    min_vikubil = 0
     i = 0
 
-    husalisti = HusSheetHandler(wb).read()
-    thrifalisti = None
+    husalisti = __get_husalisti(wb)
+    foreldralisti = __get_foreldralisti(husalisti, wb)
+    thrifalisti = __get_thrifalisti(foreldralisti, husalisti, wb)
 
-    while min_vikubil < 8:
+    while True:
         i += 1
-        foreldralisti = ForeldriSheetHandler(wb, husalisti).read()
-
-        thrifalisti = Thrifalisti(ThrifalistiSheetHandler(wb, husalisti, foreldralisti).read())
 
         ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
         min_vikubil = __calc_min_vikubil(foreldralisti)
-
         print("min vikubil: " + str(min_vikubil))
+
+        if min_vikubil >= 8:
+            break
+        else:
+            foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
 
     print(str(i) + " runs")
 
     write_to_excel_and_save(thrifalisti, ThrifalistiSheetHandler(wb, husalisti, foreldralisti), wb)
+
+
+def __reset_listar(husalisti, wb):
+    foreldralisti = __get_foreldralisti(husalisti, wb)
+    thrifalisti = __get_thrifalisti(foreldralisti, husalisti, wb)
+    return foreldralisti, thrifalisti
+
+
+def __get_thrifalisti(foreldralisti, husalisti, wb):
+    thrifalisti = Thrifalisti(ThrifalistiSheetHandler(wb, husalisti, foreldralisti).read())
+    return thrifalisti
+
+
+def __get_foreldralisti(husalisti, wb):
+    foreldralisti = ForeldriSheetHandler(wb, husalisti).read()
+    return foreldralisti
+
+
+def __get_husalisti(wb):
+    husalisti = HusSheetHandler(wb).read()
+    return husalisti
 
 
 def __calc_min_vikubil(foreldralisti):

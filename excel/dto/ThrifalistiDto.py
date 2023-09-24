@@ -1,4 +1,4 @@
-from excel.dto.Column import Column
+from excel.Column import Column
 
 
 class ThrifalistiColumn(Column):
