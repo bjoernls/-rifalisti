@@ -12,41 +12,69 @@ from mapper.Mapper import HusMapper, ForeldriMapper, ThrifalistiMapper
 
 class SheetHandler:
 
-    def __init__(self, wb, info):
-        self._sheet = wb[info.get_sheet_name()]
-        self._info = info
-        self._mapper = self._get_mapper()
-        self._reader = self._init_reader()
-        self._writer = self._init_writer()
+    def __init__(self, wb):
+        self.__wb = wb
+        self.__mapper = None
+        self.__reader = None
+        self.__writer = None
+        self.__info = None
+        self.__sheet = None
 
     def read(self):
-        return self._reader.read()
+        self._get_mapper().reset()
+        return [self._get_mapper().map_to_entity(dto) for dto in self._get_reader().read()]
 
     def write(self, entities):
-        if not self._writer:
-            raise NotImplementedError
-        return self._writer.write(entities)
+        return self._get_writer().write(entities)
+
+    def _get_sheet(self):
+        if not self.__sheet:
+            self.__sheet = self.__wb[self._get_info().get_sheet_name()]
+        return self.__sheet
 
     def _get_columns(self):
         raise NotImplementedError
 
-    def _init_reader(self):
-        return SheetReader(self._sheet, self._mapper, self._info, self._get_columns(), self._get_dto_factory())
+    def _get_reader(self):
+        if not self.__reader:
+            self.__reader = self._init_reader()
+        return self.__reader
 
     def _get_dto_factory(self):
         raise NotImplementedError
 
+    def _get_writer(self):
+        if not self.__writer:
+            self.__writer = self._init_writer()
+        return self.__writer
+
     def _get_mapper(self):
-        raise NotImplementedError
+        if not self.__mapper:
+            self.__mapper = self._init_mapper()
+        return self.__mapper
+
+    def _get_info(self):
+        if not self.__info:
+            self.__info = self._init_info()
+        return self.__info
 
     def _init_writer(self):
-        return None
+        raise NotImplementedError
+
+    def _init_reader(self):
+        return SheetReader(self._get_sheet(), self._get_info(), self._get_columns(), self._get_dto_factory())
+
+    def _init_info(self):
+        raise NotImplementedError
+
+    def _init_mapper(self):
+        raise NotImplementedError
 
 
 class HusSheetHandler(SheetHandler):
 
     def __init__(self, wb):
-        super().__init__(wb, HusSheetInfo())
+        super().__init__(wb)
 
     def _get_columns(self):
         columns = [Column("A", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
@@ -57,18 +85,18 @@ class HusSheetHandler(SheetHandler):
     def _get_dto_factory(self):
         return lambda: HusDto()
 
-    def _get_mapper(self):
+    def _init_mapper(self):
         return HusMapper()
+
+    def _init_info(self):
+        return HusSheetInfo()
 
 
 class ForeldriSheetHandler(SheetHandler):
 
     def __init__(self, wb, husalisti):
-        self.__husalisti = husalisti
-        super().__init__(wb, ForeldriSheetInfo())
-
-    def _get_mapper(self):
-        return ForeldriMapper(self.__husalisti)
+        super().__init__(wb)
+        self.husalisti = husalisti
 
     def _get_columns(self):
         columns = [Column("B", lambda args: args[0].set_nafn(args[1]), lambda args: args[0].get_nafn())]
@@ -82,36 +110,36 @@ class ForeldriSheetHandler(SheetHandler):
     def _get_dto_factory(self):
         return lambda: ForeldriDto()
 
+    def _init_mapper(self):
+        return ForeldriMapper(self.husalisti)
+
+    def _init_info(self):
+        return ForeldriSheetInfo()
+
 
 class ThrifalistiSheetHandler(SheetHandler):
     def __init__(self, wb, husalisti, foreldralisti):
-        self.__foreldralisti = foreldralisti
-        self.__husalisti = husalisti
+        super().__init__(wb)
+        self.foreldralisti = foreldralisti
+        self.husalisti = husalisti
         self.__col_to_hus_map = {}
-        super().__init__(wb, ThrifalistiSheetInfo())
 
     def _get_dto_factory(self):
         return lambda: ThrifalistiDto()
 
-    def _get_mapper(self):
-        return ThrifalistiMapper(self.__husalisti, self.__foreldralisti, self._get_columns(),
-                                 self.__get_col_to_hus_map(self._info))
+    def _init_mapper(self):
+        return ThrifalistiMapper(self.husalisti, self.foreldralisti, self._get_columns(), self.__get_col_to_hus_map())
+
+    def _init_info(self):
+        return ThrifalistiSheetInfo()
 
     def _init_reader(self):
-        return ThrifalistiSheetReader(self._sheet, self._mapper, self._info,
-                                      self._get_columns(), self._get_dto_factory(),
-                                      self.__get_col_to_hus_map(self._info))
+        return ThrifalistiSheetReader(self._get_sheet(), self._get_info(),
+                                      self._get_columns(), self._get_dto_factory(), self.__get_col_to_hus_map())
 
     def _init_writer(self):
-        return ThrifalistiSheetWriter(self._sheet, self._mapper, self._info, self._get_columns(),
-                                      self.__get_col_to_hus_map(self._info))
-
-    def __get_col_to_hus_map(self, info):
-        if not self.__col_to_hus_map:
-            self.__col_to_hus_map = {
-                col.get_pos(): get_sheet_value(self._sheet, col.get_pos(), info.get_lykill_row())
-                for col in self._get_columns()}
-        return self.__col_to_hus_map
+        return ThrifalistiSheetWriter(self._get_sheet(), self._get_mapper(), self._get_info(), self._get_columns(),
+                                      self.__get_col_to_hus_map())
 
     def _get_columns(self):
         columns = [
@@ -123,3 +151,10 @@ class ThrifalistiSheetHandler(SheetHandler):
                 ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
                                   lambda args: args[0].get_thrif(args[1]), is_thrif=True)]
         return columns
+
+    def __get_col_to_hus_map(self):
+        if not self.__col_to_hus_map:
+            self.__col_to_hus_map = {
+                col.get_pos(): get_sheet_value(self._get_sheet(), col.get_pos(), self._get_info().get_lykill_row())
+                for col in self._get_columns()}
+        return self.__col_to_hus_map

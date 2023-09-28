@@ -7,9 +7,8 @@ def get_sheet_value(sheet, col, row):
 
 class SheetReader:
 
-    def __init__(self, sheet, mapper, info, columns, dto_factory):
+    def __init__(self, sheet, info, columns, dto_factory):
         self._sheet = sheet
-        self._mapper = mapper
         self._info = info
         self._columns = columns
         self._dto_factory = dto_factory
@@ -37,8 +36,7 @@ class SheetReader:
         return all([self.get_sheet_value(row, col.get_pos()) is None for col in columns])
 
     def read(self):
-        self._mapper.reset()
-        return [self._mapper.map_to_entity(dto) for dto in self._create_dtos()]
+        return self._create_dtos()
 
     def get_sheet_value(self, row, col):
         return get_sheet_value(self._sheet, col, row)
@@ -46,8 +44,8 @@ class SheetReader:
 
 class ThrifalistiSheetReader(SheetReader):
 
-    def __init__(self, sheet, mapper, info, columns, dto_factory, col_to_hus_map):
-        super().__init__(sheet, mapper, info, columns, dto_factory)
+    def __init__(self, sheet, info, columns, dto_factory, col_to_hus_map):
+        super().__init__(sheet, info, columns, dto_factory)
         self.__col_to_hus_map = col_to_hus_map
 
     def _set_dto_value(self, col, dto, val):
