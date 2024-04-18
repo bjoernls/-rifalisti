@@ -2,7 +2,7 @@ import openpyxl
 
 from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler
+from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler, YfirlitSheetHandler
 
 
 def print_sorted_foreldralisti(foreldralisti):
@@ -24,16 +24,19 @@ def compute(wb):
         ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
 
         min_vikubil = __calc_min_vikubil(foreldralisti)
-        print("min vikubil: " + str(min_vikubil))
+        max_thrif_count = __calc_max_thrif_count(foreldralisti)
+        print(f"min vikubil: {str(min_vikubil)}, max thrif count: {str(max_thrif_count)}")
 
-        if min_vikubil >= 8:
+        if min_vikubil >= 6 and max_thrif_count <= 3:
             break
         else:
             foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
 
     print(str(i) + " runs")
 
-    write_to_excel_and_save(thrifalisti, ThrifalistiSheetHandler(wb, husalisti, foreldralisti), wb)
+    tl_handler = ThrifalistiSheetHandler(wb, husalisti, foreldralisti)
+    y_handler = YfirlitSheetHandler(wb)
+    write_to_excel_and_save(thrifalisti, foreldralisti, tl_handler, y_handler, wb)
 
 
 def __reset_listar(husalisti, wb):
@@ -61,7 +64,12 @@ def __calc_min_vikubil(foreldralisti):
     return min([f.get_vikubil() for f in list(filter(lambda f: f.get_vikubil() > 0, foreldralisti))])
 
 
-def write_to_excel_and_save(thrifalisti, thrifalisti_sheet_handler, wb):
+def __calc_max_thrif_count(foreldralisti):
+    return max([f.get_count() for f in foreldralisti])
+
+
+def write_to_excel_and_save(thrifalisti, foreldralisti, thrifalisti_sheet_handler, yfirlit_handler, wb):
+    yfirlit_handler.write(foreldralisti)
     thrifalisti_sheet_handler.write(thrifalisti)
     wb.save("result.xlsx")
 
@@ -71,4 +79,5 @@ def calc_viku_fjoldi(vikuthrifalistar):
 
 
 if __name__ == '__main__':
-    compute(openpyxl.load_workbook("Testgögn.xlsx"))
+    # compute(openpyxl.load_workbook("Testgögn.xlsx"))
+    compute(openpyxl.load_workbook("Þrifalisti - vor_2024.xlsx"))

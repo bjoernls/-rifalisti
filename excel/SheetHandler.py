@@ -1,13 +1,15 @@
 from excel.Column import Column
 from excel.SheetReader import SheetReader, ThrifalistiSheetReader, get_sheet_value
-from excel.SheetWriter import ThrifalistiSheetWriter
+from excel.SheetWriter import ThrifalistiSheetWriter, YfirlitSheetWriter
 from excel.dto.ForeldriDto import ForeldriDto
 from excel.dto.HusDto import HusDto
 from excel.dto.ThrifalistiDto import ThrifalistiDto, ThrifalistiColumn
+from excel.dto.YfirlitDto import YfirlitDto
 from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
 from excel.sheet_infos.HusSheetInfo import HusSheetInfo
 from excel.sheet_infos.ThrifalistiSheetInfo import ThrifalistiSheetInfo
-from mapper.Mapper import HusMapper, ForeldriMapper, ThrifalistiMapper
+from excel.sheet_infos.YfirlitSheetInfo import YfirlitSheetInfo
+from mapper.Mapper import HusMapper, ForeldriMapper, ThrifalistiMapper, YfirlitMapper
 
 
 class SheetHandler:
@@ -92,6 +94,37 @@ class HusSheetHandler(SheetHandler):
         return HusSheetInfo()
 
 
+columns = [
+    ThrifalistiColumn("A", None, lambda args: args[0].get_nafn()),
+    ThrifalistiColumn("B", None, lambda args: args[0].get_count()),
+
+    ThrifalistiColumn("C", None, lambda args: args[0].get_alloc_hus(0)),
+    ThrifalistiColumn("D", None, lambda args: args[0].get_alloc_vika(0)),
+
+    ThrifalistiColumn("E", None, lambda args: args[0].get_alloc_hus(1)),
+    ThrifalistiColumn("F", None, lambda args: args[0].get_alloc_vika(1)),
+
+    ThrifalistiColumn("G", None, lambda args: args[0].get_alloc_hus(2)),
+    ThrifalistiColumn("H", None, lambda args: args[0].get_alloc_vika(2))
+]
+
+
+class YfirlitSheetHandler(SheetHandler):
+    def _get_columns(self):
+
+        return columns
+
+    def _init_writer(self):
+        return YfirlitSheetWriter(self._get_sheet(), self._get_mapper(),
+                                  self._get_info(), self._get_columns())
+
+    def _init_info(self):
+        return YfirlitSheetInfo()
+
+    def _init_mapper(self):
+        return YfirlitMapper()
+
+
 class ForeldriSheetHandler(SheetHandler):
 
     def __init__(self, wb, husalisti):
@@ -145,7 +178,7 @@ class ThrifalistiSheetHandler(SheetHandler):
         columns = [
             ThrifalistiColumn("A", lambda args: args[0].set_vika_texti(args[1]), lambda dto: dto.get_vika_texti())]
 
-        for s in range(ord("B"), ord("G") + 1):
+        for s in range(ord("B"), ord("H") + 1):
             col_stafur = chr(s)
             columns += [
                 ThrifalistiColumn(col_stafur, lambda args: args[0].add_to_thrifalisti(args[1], args[2]),
@@ -158,3 +191,6 @@ class ThrifalistiSheetHandler(SheetHandler):
                 col.get_pos(): get_sheet_value(self._get_sheet(), col.get_pos(), self._get_info().get_lykill_row())
                 for col in self._get_columns()}
         return self.__col_to_hus_map
+
+    def write(self, entities):
+        super().write(entities)  # todo filter is_fri

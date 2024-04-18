@@ -7,10 +7,8 @@ class Hus:
     def get_nafn(self):
         return self.__nafn
 
-
     def is_exclusift(self):
         return self.__exklusift
-
 
     def __str__(self):
         return self.__nafn + ": "

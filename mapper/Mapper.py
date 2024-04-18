@@ -1,8 +1,10 @@
 from entity.Foreldri import Foreldri
 from entity.Hus import Hus
+from entity.Vika import Vika
 from entity.VikuThrifalisti import VikuThrifalisti
 from excel.dto.ForeldriDto import ForeldriDto
 from excel.dto.ThrifalistiDto import ThrifalistiDto
+from excel.dto.YfirlitDto import YfirlitDto
 
 
 class Mapper:
@@ -18,12 +20,14 @@ class Mapper:
 
 
 class HusMapper(Mapper):
-
-    def map_to_dto(self, entity):
-        pass
-
     def map_to_entity(self, hus_dto):
         return Hus(hus_dto.get_nafn(), exklusift=hus_dto.is_exclusive())
+
+
+class YfirlitMapper(Mapper):
+
+    def map_to_dto(self, foreldri):
+        return YfirlitDto(foreldri.get_nafn(), foreldri.get_count(), foreldri.get_allocations())
 
 
 class ForeldriMapper(Mapper):
@@ -47,7 +51,6 @@ class ForeldriMapper(Mapper):
 
 
 class ThrifalistiMapper(Mapper):
-    __FRI = ["Haustfrí", "Jólafrí"]
 
     def __init__(self, husalisti, foreldralisti, columns, col_to_hus_map):
         self.vika_nr = 0
@@ -69,13 +72,11 @@ class ThrifalistiMapper(Mapper):
         return dto
 
     def map_to_entity(self, dto):
-        vika_texti = dto.get_vika_texti()
-        vika = VikuThrifalisti(self.vika_nr, vika_texti,
-                               self.__is_fri(vika_texti), self.__create_new_vikuthrifalisti(),
-                               self.__get_all_non_exclusive_hus())
-        self.__map_foreldri_i_thrifalisti(dto, vika)
+        vikuthrifalisti = VikuThrifalisti(self.vika_nr, dto.get_vika_texti(),
+                                          self.__create_new_vikuthrifalisti(), self.__get_all_non_exclusive_hus())
+        self.__map_foreldri_i_thrifalisti(dto, vikuthrifalisti)
         self.vika_nr += 1
-        return vika
+        return vikuthrifalisti
 
     def __map_foreldri_i_thrifalisti(self, dto, vika):
         for h in self.__husalisti:
@@ -85,9 +86,6 @@ class ThrifalistiMapper(Mapper):
 
     def __get_all_non_exclusive_hus(self):
         return list(filter(lambda h: not h.is_exclusift(), self.__husalisti))
-
-    def __is_fri(self, texti):
-        return any(fri in texti for fri in self.__FRI)
 
     def __create_new_vikuthrifalisti(self):
         return {key: None for key in self.__husalisti}

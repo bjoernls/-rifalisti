@@ -35,9 +35,16 @@ class ThrifalistiSheetWriter(SheetWriter):
         self.__col_to_hus_map = col_to_hus_map
 
     def _map_to_dtos(self, thrifalisti):
-        dtos = [self._mapper.map_to_dto(thrifalisti.get_vikuthrifalisti(v.get_vika_nr()))
+        return [self._mapper.map_to_dto(thrifalisti.get_vikuthrifalisti(v.get_vika_nr()))
                 for v in thrifalisti.get_vikuthrifalistar()]
-        return dtos
 
     def _get_write_value(self, dto, col: Column):
         return col.getter(dto, self.__col_to_hus_map[col.get_pos()])
+
+
+class YfirlitSheetWriter(SheetWriter):
+    def _map_to_dtos(self, foreldralisti):
+        return [self._mapper.map_to_dto(f) for f in foreldralisti]
+
+    def _get_write_value(self, dto, col):
+        return col.getter(dto)

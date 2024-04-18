@@ -33,6 +33,9 @@ class Foreldri:
     def add_allocation(self, alloc: Allocation):
         self.__allocations += [alloc]
 
+    def get_allocations(self):
+        return self.__allocations
+
     def get_vikur(self):
         return [a.get_vika() for a in self.__allocations]
 
