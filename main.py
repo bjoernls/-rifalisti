@@ -1,5 +1,7 @@
 import openpyxl
 
+from control.AlgorithmException import MaximumAllocationsExceededException, MinVikubilNotMetException, \
+    AlgorithmException
 from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
 from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler, YfirlitSheetHandler
@@ -21,13 +23,18 @@ def compute(wb):
     while True:
         i += 1
 
-        ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
+        try:
+            ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
+        except AlgorithmException as e:
+            print(e.get_message())
+            foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
+            continue
 
         min_vikubil = __calc_min_vikubil(foreldralisti)
         max_thrif_count = __calc_max_thrif_count(foreldralisti)
         print(f"min vikubil: {str(min_vikubil)}, max thrif count: {str(max_thrif_count)}")
 
-        if min_vikubil >= 6 and max_thrif_count <= 3:
+        if min_vikubil >= 5 and max_thrif_count <= 3:
             break
         else:
             foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
@@ -80,4 +87,4 @@ def calc_viku_fjoldi(vikuthrifalistar):
 
 if __name__ == '__main__':
     # compute(openpyxl.load_workbook("Testgögn.xlsx"))
-    compute(openpyxl.load_workbook("Þrifalisti - vor_2024.xlsx"))
+    compute(openpyxl.load_workbook("Þrifalisti - Haust_2024.xlsx"))

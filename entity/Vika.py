@@ -1,4 +1,4 @@
-FRI = ["Vetrarfrí", "Páskafrí", "Sumarfrí"]
+FRI = ["Vetrarfrí", "Páskafrí", "Sumarfrí", "Haustfrí", "Jólafrí"]
 
 
 class Vika:
