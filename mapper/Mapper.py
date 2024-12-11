@@ -46,7 +46,7 @@ class ForeldriMapper(Mapper):
         husalisti_mapped = list(map(lambda h: self.__map_hus(h, self.husalisti), foreldri_dto.get_husalisti()))
         if len(husalisti_mapped) == 0:
             husalisti_mapped = list(filter(lambda h: not h.is_exclusift(), self.husalisti))
-        return Foreldri(foreldri_dto.get_nafn(), husalisti_mapped, foreldri_dto.has_less_thrif(),
+        return Foreldri(foreldri_dto.get_nafn(), husalisti_mapped, foreldri_dto.get_thrifastada(), foreldri_dto.has_less_thrif(),
                         foreldri_dto.has_auka_thrif())
 
 

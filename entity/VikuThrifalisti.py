@@ -26,6 +26,7 @@ class VikuThrifalisti:
     def set_foreldri_i_husi(self, hus, foreldri):
         foreldri.add_allocation(Allocation(self.__vika, hus))
         self.__thrifalisti_fyrir_viku[hus] = foreldri
+        #TODO færa í config
         if foreldri.get_count() > 3:
             raise MaximumAllocationsExceededException
         vikubil = foreldri.get_vikubil()
@@ -40,11 +41,6 @@ class VikuThrifalisti:
             if not self.__thrifalisti_fyrir_viku[hus]:
                 self.set_foreldri_i_husi(hus, foreldri)
                 return hus
-
-  #      for hus in self.__non_exclusive_husalisti:
-  #          if not self.__thrifalisti_fyrir_viku[hus]:
-  #              self.set_foreldri_i_husi(hus, foreldri)
-  #              return hus
 
         return None
 

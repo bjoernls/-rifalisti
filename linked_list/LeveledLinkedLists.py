@@ -11,7 +11,7 @@ class LeveledLinkedLists:
         self.level = 0
         self.curr_lllist: LinkedList = self.all_llls[self.level]
         self.tmp_foreldri = None
-        self.__retry_pile = []
+        self.__retry_pile = set()
         self.__deadlock = False
 
     def __init_linked_lists(self, foreldralisti: [Foreldri]):
@@ -57,7 +57,7 @@ class LeveledLinkedLists:
 
     # þegar það er ekki nógu langt bil á milli þrifa
     def retry(self):
-        self.__retry_pile += [self.tmp_foreldri]
+        self.__retry_pile.add(self.tmp_foreldri)
         self.tmp_foreldri = None
 
     def is_deadlock(self):
