@@ -5,6 +5,7 @@ from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
 from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler, YfirlitSheetHandler, \
     StillingarSheetHandler
+from excel.sheet_infos.YfirlitSheetInfo import YfirlitSheetInfo
 
 
 def compute(wb):
@@ -68,7 +69,8 @@ def __calc_max_thrif_count(foreldralisti):
 
 
 def write_to_excel_and_save(thrifalisti, foreldralisti, husalisti, wb):
-    YfirlitSheetHandler(wb).write(foreldralisti)
+    YfirlitSheetHandler(wb, YfirlitSheetInfo.Types.GS).write(foreldralisti)
+    YfirlitSheetHandler(wb, YfirlitSheetInfo.Types.LS).write(foreldralisti)
     ThrifalistiSheetHandler(wb, husalisti, foreldralisti).write(thrifalisti)
     wb.save("result.xlsx")
 

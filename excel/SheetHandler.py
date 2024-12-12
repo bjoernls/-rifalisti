@@ -6,7 +6,6 @@ from excel.dto.ForeldriDto import ForeldriDto
 from excel.dto.HusDto import HusDto
 from excel.dto.StillingarDto import StillingarDto
 from excel.dto.ThrifalistiDto import ThrifalistiDto, ThrifalistiColumn
-from excel.dto.YfirlitDto import YfirlitDto
 from excel.sheet_infos.ForeldriSheetInfo import ForeldriSheetInfo
 from excel.sheet_infos.HusSheetInfo import HusSheetInfo
 from excel.sheet_infos.StillingarSheetInfo import StillingarSheetInfo
@@ -133,6 +132,11 @@ columns = [
 
 
 class YfirlitSheetHandler(SheetHandler):
+
+    def __init__(self, wb, type):
+        super().__init__(wb)
+        self.__type = type
+
     def _get_columns(self):
         return columns
 
@@ -141,7 +145,7 @@ class YfirlitSheetHandler(SheetHandler):
                                   self._get_info(), self._get_columns())
 
     def _init_info(self):
-        return YfirlitSheetInfo()
+        return YfirlitSheetInfo(self.__type)
 
     def _init_mapper(self):
         return YfirlitMapper()
