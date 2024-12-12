@@ -7,17 +7,11 @@ from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, Foreldr
     StillingarSheetHandler
 
 
-def print_sorted_foreldralisti(foreldralisti):
-    foreldralisti.sort(key=lambda foreldri: foreldri.get_vikubil())
-    for f in foreldralisti:
-        print(f)
-
-
 def compute(wb):
     i = 0
 
     stillingar = __get_stillingar(wb)
-    #TODO listahandler
+    # TODO listahandler
     husalisti = __get_husalisti(wb)
     foreldralisti = __get_foreldralisti(husalisti, wb)
     thrifalisti = __get_thrifalisti(foreldralisti, husalisti, wb)
@@ -34,12 +28,11 @@ def compute(wb):
             foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
             continue
 
-        min_vikubil = __calc_min_vikubil(foreldralisti)
-        max_thrif_count = __calc_max_thrif_count(foreldralisti)
-        print(f"min vikubil: {str(min_vikubil)}, max thrif count: {str(max_thrif_count)}")
-        break
-
-    print(str(i) + " runs")
+        print(
+            f"\nmin vikubil: {str(__calc_min_vikubil(foreldralisti))}, "
+            f"max thrif count: {str(__calc_max_thrif_count(foreldralisti))}\n"
+            f"{str(i)} runs"
+        )
 
     write_to_excel_and_save(thrifalisti, foreldralisti, husalisti, wb)
 
