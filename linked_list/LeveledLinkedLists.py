@@ -8,24 +8,24 @@ class LeveledLinkedLists:
 
     def __init__(self, foreldralisti: [Foreldri]):
         self.__init_linked_lists(foreldralisti)
-        self.level = 0
-        self.curr_lllist: LinkedList = self.all_llls[self.level]
+        self.level = self.__find_init_level()
+        self.curr_lllist: LinkedList = self.__all_llls[self.level]
         self.tmp_foreldri = None
         self.__retry_pile = set()
         self.__deadlock = False
 
     def __init_linked_lists(self, foreldralisti: [Foreldri]):
-        self.all_llls = [LinkedList([], RandomStrategy())]
-        self.all_llls += [LinkedList([], RandomStrategy())]
+        self.__all_llls = [LinkedList([], RandomStrategy())]
+        self.__all_llls += [LinkedList([], RandomStrategy())]
 
         priority_list = []
         for f in foreldralisti:
             if f.has_auka_thrif():
                 priority_list += [f]
             else:
-                while len(self.all_llls) < f.get_count():
-                    self.all_llls += [LinkedList([], RandomStrategy())]
-                self.all_llls[f.get_count()].push(f)
+                while len(self.__all_llls) <= f.get_count():
+                    self.__all_llls += [LinkedList([], RandomStrategy())]
+                self.__all_llls[f.get_count()].push(f)
 
         self.priority_list_iterator = PriorityListIterator(priority_list)
 
@@ -44,15 +44,15 @@ class LeveledLinkedLists:
 
     def __increase_level(self):
         self.level += 1
-        self.curr_lllist = self.all_llls[self.level]
+        self.curr_lllist = self.__all_llls[self.level]
         self.priority_list_iterator.reset()
-        self.all_llls += [LinkedList([], RandomStrategy())]
+        self.__all_llls += [LinkedList([], RandomStrategy())]
 
     def discard(self):
         self.tmp_foreldri = None
 
     def commit(self):
-        self.all_llls[self.level + 1].push(self.tmp_foreldri)
+        self.__all_llls[self.level + 1].push(self.tmp_foreldri)
         self.tmp_foreldri = None
 
     # þegar það er ekki nógu langt bil á milli þrifa
@@ -70,3 +70,11 @@ class LeveledLinkedLists:
 
     def get_retry_pile(self):
         return self.__retry_pile
+
+    def __find_init_level(self):
+        no_llls = len(self.__all_llls)
+        for i in range (0, no_llls):
+            if self.__all_llls[i].get_size() == 0:
+                continue
+            else:
+                return i

@@ -1,6 +1,5 @@
 from random import shuffle
 
-from control.AlgorithmException import MaximumAllocationsExceededException, MinVikubilNotMetException
 from entity.Allocation import Allocation
 from entity.Vika import Vika
 
@@ -26,13 +25,6 @@ class VikuThrifalisti:
     def set_foreldri_i_husi(self, hus, foreldri):
         foreldri.add_allocation(Allocation(self.__vika, hus))
         self.__thrifalisti_fyrir_viku[hus] = foreldri
-        #TODO færa í config
-        if foreldri.get_count() > 3:
-            raise MaximumAllocationsExceededException
-        vikubil = foreldri.get_vikubil()
-        if 0 < vikubil < 7:
-            raise MinVikubilNotMetException
-
 
     def try_set_foreldri(self, foreldri):
         husalisti = foreldri.get_husalisti()
@@ -40,9 +32,11 @@ class VikuThrifalisti:
         for hus in husalisti:
             if not self.__thrifalisti_fyrir_viku[hus]:
                 self.set_foreldri_i_husi(hus, foreldri)
-                return hus
+                return True
+        return False
 
-        return None
+    def skip_hus(self, hus):
+        self.__thrifalisti_fyrir_viku[hus] = "skip"
 
     def is_full(self):
         return self.is_fri() or all([f for f in self.__thrifalisti_fyrir_viku.values()])

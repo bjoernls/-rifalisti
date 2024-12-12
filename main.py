@@ -1,10 +1,10 @@
 import openpyxl
 
-from control.AlgorithmException import MaximumAllocationsExceededException, MinVikubilNotMetException, \
-    AlgorithmException
+from control.AlgorithmException import AlgorithmException
 from control.Thrifalisti import Thrifalisti
 from control.ThrifalistiAlgo import ThrifalistiAlgo
-from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler, YfirlitSheetHandler
+from excel.SheetHandler import HusSheetHandler, ThrifalistiSheetHandler, ForeldriSheetHandler, YfirlitSheetHandler, \
+    StillingarSheetHandler
 
 
 def print_sorted_foreldralisti(foreldralisti):
@@ -16,15 +16,18 @@ def print_sorted_foreldralisti(foreldralisti):
 def compute(wb):
     i = 0
 
+    stillingar = __get_stillingar(wb)
     husalisti = __get_husalisti(wb)
     foreldralisti = __get_foreldralisti(husalisti, wb)
     thrifalisti = __get_thrifalisti(foreldralisti, husalisti, wb)
+    is_done = False
 
-    while True:
+    while not is_done:
         i += 1
 
         try:
-            ThrifalistiAlgo(foreldralisti).compute(thrifalisti)
+            ThrifalistiAlgo(foreldralisti, stillingar).compute(thrifalisti)
+            is_done = True
         except AlgorithmException as e:
             print(e.get_message())
             foreldralisti, thrifalisti = __reset_listar(husalisti, wb)
@@ -58,6 +61,10 @@ def __get_foreldralisti(husalisti, wb):
     return foreldralisti
 
 
+def __get_stillingar(wb):
+    return StillingarSheetHandler(wb).read()
+
+
 def __get_husalisti(wb):
     husalisti = HusSheetHandler(wb).read()
     return husalisti
@@ -83,4 +90,4 @@ def calc_viku_fjoldi(vikuthrifalistar):
 
 if __name__ == '__main__':
     # compute(openpyxl.load_workbook("Testgögn.xlsx"))
-    compute(openpyxl.load_workbook("Þrifalisti - Vor_2025.xlsx"))
+    compute(openpyxl.load_workbook("Þrifalisti - Sniðmát.xlsx"))
